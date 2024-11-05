@@ -22,10 +22,9 @@ head
 body
 .container
 
-
-
-  //- span.
-  //-   <a href="https://github.com/john-guerra/resultadosSegundaVuelta2022_historia"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"></a>
+  span.d-flex.flex-row-reverse
+    <a class="github-button" href="https://github.com/john-guerra/USPresidentialElectionVisualization" data-color-scheme="no-preference: dark; light: light; dark: dark;" data-icon="octicon-star" data-size="large" aria-label="Star john-guerra/USPresidentialElectionVisualization on GitHub">Star</a>
+  
 
   .row
     .col-md-12.col-xs-12
@@ -61,7 +60,7 @@ body
       section.step
         h2.title How did Americans vote in the 2020 Presidential Election?
         p This is an analysis of the voting in the counties of the United States in the 2020 presidential election.
-        p Scroll down to continue.
+        strong Scroll down to continue.
 
       section.step
         h2.title Let's visualize the results!
@@ -77,15 +76,17 @@ body
 
       section.step
         h2.title Results by county
-        p By counties the result is different, but also misleading, for several reasons...
+        p By counties the result is different, but also misleading, but it is still far from accurate as it doesn't represent the actual percentage of votes...
+
+      section.step
+        h2.title Let's use color saturation
+        p Let's add a scale where darker colors represent higher differences, and lighter colors represent smaller differences. However, this is still misleading...
+
 
       section.step
         h2.title Geographic area is misleading
         p For example, even though #[span#exampleLeft] and #[span#exampleRight] have similar opposing results percent wise, they are very different in terms of population (#[span#exampleLeftPopulation] vs #[span#exampleRightPopulation]). 
 
-      section.step
-        h2.title Use color shades
-        p Let's add a scale where darker colors represent higher differences, and lighter colors represent smaller differences.
 
       section.step
         h2.title What about the number of voters?
@@ -116,24 +117,24 @@ body
         p If you want to know the values of each county, move the mouse over the center of the circle.
 
       section.step
-        h2.title Now we can compare
+        h2.title Now we can compare better
         p With this map it is a bit easier to see how the country voted.
 
       section.step
         h2.title Patterns by regions
-        p For example, it can be seen how counties near the border with Mexico voted more for #[span.colorDemocrat Democrats], and how in the Midwest more for #[span.colorRepublican Republicans].
+        p For example, it can be seen how larger counties and near the coast tend to vote more for #[span.colorDemocrat Democrats], while interior counties for #[span.colorRepublican Republicans].
 
       section.step
-        h2.title Is this true for the entire region?
-        p With the map it is not so easy to know. (In reality, maps are not the best way to visualize data for most tasks 😉).
+        h2.title What about the overall result?
+        p With the map it is not so easy to know. (In reality, maps are not the best way to visualize data for most analysis tasks 😉).
 
       section.step
         h2.title Let's remove the map then...
         p Now we have more space to use. But the counties are still located by geographic position, which is no longer necessary.
 
       section.step
-        h2.title All to the center
-        p Removing the geographic location allows us to use the location to encode more information. For example, horizontally by their result.
+        h2.title Everyone to the middle
+        p Removing the geographic position allows us to use the location to encode more information. For example, we can place counties horizontally depending on who the voted more towards...
 
       section.step
         h2.title From left to right
@@ -145,21 +146,23 @@ body
 
       section.step
         h2.title Voting by Regions
-        p This graphic shows us how each region of the United States voted. Here we can observe, for example, how the West Coast voted more for #[span.colorDemocrat Democrats], versus regions more in the center and south of the country, which voted more for #[span.colorRepublican Republicans]. This allows for easier comparison and understanding of the final election results.
+        p This graphic shows us how each region of the United States voted. Here we can observe, for example, how the New England region tends to vote more for #[span.colorDemocrat Democrats], versus East South Central which voted more for #[span.colorRepublican Republicans]. This allows for easier comparison and understanding of the final election results.
 
       section.step
         h2.title Voting by population
         p We can also change the vertical position to encode the number of voters by population.
 
+      #extra-space
       section.step.last
-        h2.title Thank you very much!
-        p Developed by #[a(href="http://johnguerra.co") John Alexis Guerra Gómez]
+        h2.title Thank you! 
+        p Thanks for making it this far, I hope you liked it. If you have any questions or suggestion feel free to reach out via social media, just search for #[a(href="http://johnguerra.co") John Alexis Guerra Gómez].
         br
         p Using data from #[a(href="https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/VOQCHQ") MIT Election Data and Science Lab]
         blockquote.          
-          | MIT Election Data and Science Lab, 2018, "County Presidential Election Returns 2000-2020", https://doi.org/10.7910/DVN/VOQCHQ, Harvard Dataverse, V13, UNF:6:GILlTHRWH0LbH2TItBsb2w== [fileUNF]
+          MIT Election Data and Science Lab, 2018, "County Presidential Election Returns 2000-2020", https://doi.org/10.7910/DVN/VOQCHQ, Harvard Dataverse, V13, UNF:6:GILlTHRWH0LbH2TItBsb2w== [fileUNF]
 
         
+      #extra-space
       #extra-space
 
 
@@ -167,12 +170,9 @@ body
 
 script(src="./lib/js/d3.v7.min.js")
 script(src="./lib/js/d3-force-boundary.min.js")
-//- script(src="./lib/js/d3-queue.v3.min.js")
-//- script(src="./lib/js/d3-scale-chromatic.v1.min.js")
 script(src="./lib/js/topojson-client.min.js")
 //- script(src="./lib/js/d3-legend.min.js")
 //- script(src="./lib/js/jquery.min.js")
-//- script(src="./lib/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous")
 
 
 script(src="./lib/js/popper.min.js")
@@ -193,6 +193,8 @@ script(src="js/sections.js")
 //- script(src="./js/choropletColombia.js")
 //- script(src="./js/main.js")
 script(src="./js/compareCities.js")
+<!-- Place this tag in your head or just before your close body tag. -->
+script(async defer src="https://buttons.github.io/buttons.js")
 
 
 //- script.

@@ -42,7 +42,7 @@
 }
 
 .step {
-  margin-bottom: 300px;
+  margin-bottom: calc(100% + 100px);
   /*margin-top: 300px;*/
   /* font-family: "TiemposTextWeb-Regular","Georgia"; */
   font-size: 1.2em;

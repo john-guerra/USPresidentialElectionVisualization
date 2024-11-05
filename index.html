@@ -15,7 +15,7 @@
   <link rel="stylesheet" type="text/css" href="css/scroller.css"/>
 </head>
 <body></body>
-<div class="container">
+<div class="container"><span class="d-flex flex-row-reverse"><a class="github-button" href="https://github.com/john-guerra/USPresidentialElectionVisualization" data-color-scheme="no-preference: dark; light: light; dark: dark;" data-icon="octicon-star" data-size="large" aria-label="Star john-guerra/USPresidentialElectionVisualization on GitHub">Star</a></span>
   <div class="row">
     <div class="col-md-12 col-xs-12">
       <h1>US Presidential Election Results</h1>
@@ -49,8 +49,7 @@
     <div class="col-xs-12 col-md-4" id="sections">
       <section class="step">
         <h2 class="title">How did Americans vote in the 2020 Presidential Election?</h2>
-        <p>This is an analysis of the voting in the counties of the United States in the 2020 presidential election.</p>
-        <p>Scroll down to continue.</p>
+        <p>This is an analysis of the voting in the counties of the United States in the 2020 presidential election.</p><strong>Scroll down to continue.</strong>
       </section>
       <section class="step">
         <h2 class="title">Let's visualize the results!</h2>
@@ -66,15 +65,15 @@
       </section>
       <section class="step">
         <h2 class="title">Results by county</h2>
-        <p>By counties the result is different, but also misleading, for several reasons...</p>
+        <p>By counties the result is different, but also misleading, but it is still far from accurate as it doesn't represent the actual percentage of votes...</p>
+      </section>
+      <section class="step">
+        <h2 class="title">Let's use color saturation</h2>
+        <p>Let's add a scale where darker colors represent higher differences, and lighter colors represent smaller differences. However, this is still misleading...</p>
       </section>
       <section class="step">
         <h2 class="title">Geographic area is misleading</h2>
         <p>For example, even though <span id="exampleLeft"></span> and <span id="exampleRight"></span> have similar opposing results percent wise, they are very different in terms of population (<span id="exampleLeftPopulation"></span> vs <span id="exampleRightPopulation"></span>). </p>
-      </section>
-      <section class="step">
-        <h2 class="title">Use color shades</h2>
-        <p>Let's add a scale where darker colors represent higher differences, and lighter colors represent smaller differences.</p>
       </section>
       <section class="step">
         <h2 class="title">What about the number of voters?</h2>
@@ -105,24 +104,24 @@
         <p>If you want to know the values of each county, move the mouse over the center of the circle.</p>
       </section>
       <section class="step">
-        <h2 class="title">Now we can compare</h2>
+        <h2 class="title">Now we can compare better</h2>
         <p>With this map it is a bit easier to see how the country voted.</p>
       </section>
       <section class="step">
         <h2 class="title">Patterns by regions</h2>
-        <p>For example, it can be seen how counties near the border with Mexico voted more for <span class="colorDemocrat">Democrats</span>, and how in the Midwest more for <span class="colorRepublican">Republicans</span>.</p>
+        <p>For example, it can be seen how larger counties and near the coast tend to vote more for <span class="colorDemocrat">Democrats</span>, while interior counties for <span class="colorRepublican">Republicans</span>.</p>
       </section>
       <section class="step">
-        <h2 class="title">Is this true for the entire region?</h2>
-        <p>With the map it is not so easy to know. (In reality, maps are not the best way to visualize data for most tasks 😉).</p>
+        <h2 class="title">What about the overall result?</h2>
+        <p>With the map it is not so easy to know. (In reality, maps are not the best way to visualize data for most analysis tasks 😉).</p>
       </section>
       <section class="step">
         <h2 class="title">Let's remove the map then...</h2>
         <p>Now we have more space to use. But the counties are still located by geographic position, which is no longer necessary.</p>
       </section>
       <section class="step">
-        <h2 class="title">All to the center</h2>
-        <p>Removing the geographic location allows us to use the location to encode more information. For example, horizontally by their result.</p>
+        <h2 class="title">Everyone to the middle</h2>
+        <p>Removing the geographic position allows us to use the location to encode more information. For example, we can place counties horizontally depending on who the voted more towards...</p>
       </section>
       <section class="step">
         <h2 class="title">From left to right</h2>
@@ -134,22 +133,24 @@
       </section>
       <section class="step">
         <h2 class="title">Voting by Regions</h2>
-        <p>This graphic shows us how each region of the United States voted. Here we can observe, for example, how the West Coast voted more for <span class="colorDemocrat">Democrats</span>, versus regions more in the center and south of the country, which voted more for <span class="colorRepublican">Republicans</span>. This allows for easier comparison and understanding of the final election results.</p>
+        <p>This graphic shows us how each region of the United States voted. Here we can observe, for example, how the New England region tends to vote more for <span class="colorDemocrat">Democrats</span>, versus East South Central which voted more for <span class="colorRepublican">Republicans</span>. This allows for easier comparison and understanding of the final election results.</p>
       </section>
       <section class="step">
         <h2 class="title">Voting by population</h2>
         <p>We can also change the vertical position to encode the number of voters by population.</p>
       </section>
+      <div id="extra-space"></div>
       <section class="step last">
-        <h2 class="title">Thank you very much!</h2>
-        <p>Developed by <a href="http://johnguerra.co">John Alexis Guerra Gómez</a></p><br/>
+        <h2 class="title">Thank you! </h2>
+        <p>Thanks for making it this far, I hope you liked it. If you have any questions or suggestion feel free to reach out via social media, just search for <a href="http://johnguerra.co">John Alexis Guerra Gómez</a>.</p><br/>
         <p>Using data from <a href="https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/VOQCHQ">MIT Election Data and Science Lab</a></p>
         <blockquote>
-          | MIT Election Data and Science Lab, 2018, "County Presidential Election Returns 2000-2020", https://doi.org/10.7910/DVN/VOQCHQ, Harvard Dataverse, V13, UNF:6:GILlTHRWH0LbH2TItBsb2w== [fileUNF]
+          MIT Election Data and Science Lab, 2018, "County Presidential Election Returns 2000-2020", https://doi.org/10.7910/DVN/VOQCHQ, Harvard Dataverse, V13, UNF:6:GILlTHRWH0LbH2TItBsb2w== [fileUNF]
           
           
         </blockquote>
       </section>
+      <div id="extra-space"></div>
       <div id="extra-space"></div>
     </div>
   </div>
@@ -165,4 +166,5 @@
 <script src="js/scrollerElections.js"></script>
 <script src="js/scroller.js"></script>
 <script src="js/sections.js"></script>
-<script src="./js/compareCities.js"></script>
+<script src="./js/compareCities.js"></script><!-- Place this tag in your head or just before your close body tag. -->
+<script async="async" defer="defer" src="https://buttons.github.io/buttons.js"></script>

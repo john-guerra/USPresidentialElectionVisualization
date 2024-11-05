@@ -16,7 +16,7 @@ function scrollerElections(electionData, mapData, regionsData) {
     dRegiones = {},
     dFeatures = {},
     regiones,
-    defaultR = 3,
+    defaultR = 2,
     collisionFactor = 1.1,
     forceToCentroid = 0.3,
     showMap = false,
@@ -188,6 +188,28 @@ function scrollerElections(electionData, mapData, regionsData) {
     // width = document.getElementById("visFiller").offsetWidth;
     height = parseInt(parseInt(d3.select("#vis").style("height"), 10));
 
+    // larger circles on bigger screens
+    if (width > 600) defaultR = 3;
+
+    function onChangeYear() {
+      this.removeEventListener("input", onChangeYear);
+      simulation.stop();
+      YEAR = this.value;
+      filteredData = electionData.filter((d) => d.year === YEAR);
+
+      console.log("new year", this, YEAR, filteredData);
+      // redrawMap();
+
+      init();
+      simulation.nodes(filteredData).restart();
+      resetForces();
+      if (!circlesDancing) redrawMap();
+    }
+
+    document
+      .getElementById("yearSelect")
+      .addEventListener("change", onChangeYear);
+
     init();
 
     console.log("width, height", width, height, "r", r);
@@ -249,14 +271,6 @@ function scrollerElections(electionData, mapData, regionsData) {
 
     selected = null;
 
-    // path2D = new Path2D();
-    // if (showMap) {
-    //   pathCanvas
-    //     // .context(path2D)(byCities ? land : landState);
-    // }
-
-    // redrawMap();
-
     console.log("🏋🏼‍♀️ Initializing force Simulation with ", filteredData.length);
     simulation = d3.forceSimulation(filteredData).stop();
 
@@ -280,18 +294,9 @@ function scrollerElections(electionData, mapData, regionsData) {
       if (!showCircles) return;
       selected = simulation.find(event.offsetX, event.offsetY);
       ticked();
-      // console.log("xy",event, event.offsetX, event.offsetY);
-      // console.log("Hovered", selected);
-
-      // d3.select(contextFg.canvas)
-      //   .attr("data-toggle", "tooltip")
-      //   .attr("data-placement", "left")
-      //   .attr("title", selected.pct);
 
       d3.select("#vTooltip")
         .style("display", "block")
-        // .style("top", event.screenX + "px")
-        // .style("left", event.screenY + "px")
         .select("p")
         .html(
           "Difference: " +
@@ -332,11 +337,16 @@ function scrollerElections(electionData, mapData, regionsData) {
         contextFg.save();
         contextFg.beginPath();
         contextFg.setLineDash([5, 3]);
-        contextFg.strokeStyle = "#333";
-        contextFg.moveTo(x(0), height * (yToCenter ? 0.2 : 0));
-        contextFg.lineTo(x(0), height * (yToCenter ? 0.8 : 0.95));
+        contextFg.strokeStyle = "#aaa";
+
+        contextFg.moveTo(x(0), height * (yToCenter ? 0.3 : 0));
+        contextFg.lineTo(x(0), height * (yToCenter ? 0.7 : 0.95));
         contextFg.stroke();
-        contextFg.drawLine;
+        // contextFg.drawLine
+        contextFg.font = "0.6em Fjalla One";
+        contextFg.fillStyle = "#aaa";
+        contextFg.textAlign = "center";
+        contextFg.fillText("0%", x(0), height * (yToCenter ? 0.7 : 0.95) + 2);
         contextFg.restore();
       }
     } //ticked
@@ -392,10 +402,10 @@ function scrollerElections(electionData, mapData, regionsData) {
       if (!circlesByGeo && !yByPopulation && !yToCenter) {
         contextFg.save();
         contextFg.fillStyle = "#d4d4d4";
-        contextFg.font = "12pt";
+        contextFg.font = "1.4em";
         contextFg.textAlign = "left";
         regiones.forEach((r) => {
-          contextFg.fillText(r, 50, y(r));
+          contextFg.fillText(r, 30, y(r));
         });
         contextFg.restore();
       }
@@ -551,7 +561,7 @@ function scrollerElections(electionData, mapData, regionsData) {
 
     // Exampe Right
     let exampleRight;
-    for (let d of electionData.sort((a, b) => b.pct - a.pct)) {
+    for (let d of electionData.sort((a, b) => a.pct - b.pct)) {
       exampleRight = d;
       if (d.pct > -1 * exampleLeft.pct) break;
     }
@@ -562,8 +572,12 @@ function scrollerElections(electionData, mapData, regionsData) {
     d3.select("#exampleRight").html(
       `${exampleRight.county_name}, ${exampleRight.state} <span class="colorRepublican">${fmtPct(exampleRight.pct)}</span>`
     );
-    d3.select("#exampleLeftPopulation").html(`<span class="colorDemocrat">${exampleLeft.totalVotes}</span>`);
-    d3.select("#exampleRightPopulation").html(`<span class="colorRepublican">${exampleLeft.totalVotes}</span>`);
+    d3.select("#exampleLeftPopulation").html(
+      `<span class="colorDemocrat">${fmt(exampleLeft.totalVotes)}</span>`
+    );
+    d3.select("#exampleRightPopulation").html(
+      `<span class="colorRepublican">${fmt(exampleRight.totalVotes)}</span>`
+    );
   }
 
   function init() {
@@ -591,8 +605,8 @@ function scrollerElections(electionData, mapData, regionsData) {
       d.feat = dFeatures[d.geoId];
       d.region = dRegiones[d.state.toUpperCase()];
 
-      if (!d.feat) console.error("🚫 no feature for ", d.geoId, d);
-      if (!d.region) console.error("😵‍💫 no region for ", d);
+      // if (!d.feat) console.error("🚫 no feature for ", d.geoId, d);
+      // if (!d.region) console.error("😵‍💫 no region for ", d);
       // d.state.toUpperCase() !== "CONSULADOS"
       // ?
       // dRegiones[d.geoId]
@@ -602,27 +616,28 @@ function scrollerElections(electionData, mapData, regionsData) {
     totalsByState = d3
       .rollups(
         filteredData,
-        (v) => d3.mean(v, (d) => d.pct),
+        (v) => ({
+          meanPct: d3.mean(v, (d) => d.pct),
+          totalVotes: d3.sum(v, (d) => d.totalVotes),
+          [LEFT]: d3.sum(v, (d) => d[LEFT]),
+          [RIGHT]: d3.sum(v, (d) => d[RIGHT]),
+          "other sum": d3.sum(v, (d) => d["other sum"]),
+        }),
         (d) => d.state
       )
-      .map(([key, value]) => ({ key, value }));
+      .map(([key, d]) => ({
+        ...d,
+        key,
+        value: (d[RIGHT] - d[LEFT]) / d.totalVotes,
+      }));
 
     totalsByState.forEach((d) => {
       d.feat = dFeatures[d.key];
     });
 
-    r = width / rFactor;
+    console.log("💯 totalsByState", totalsByState);
 
-    document
-      .getElementById("yearSelect")
-      .addEventListener("input", function () {
-        YEAR = this.value;
-        filteredData = electionData.filter((d) => d.year === YEAR);
-        simulation.nodes(filteredData).restart();
-        console.log("new year", this, YEAR, filteredData);
-        redrawMap();
-        resetForces();
-      });
+    r = width / rFactor;
 
     showExampleValues();
   } // init
