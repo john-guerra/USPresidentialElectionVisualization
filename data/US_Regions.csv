@@ -1,0 +1,53 @@
+﻿Region,Division,State
+Northeast,New England,Connecticut
+Northeast,New England,Maine
+Northeast,New England,Massachusetts
+Northeast,New England,New Hampshire
+Northeast,New England,Rhode Island
+Northeast,New England,Vermont
+Northeast,Middle Atlantic,New Jersey
+Northeast,Middle Atlantic,New York
+Northeast,Middle Atlantic,Pennsylvania
+Northeast,Middle Atlantic,Maryland
+Northeast,Middle Atlantic,Delaware
+Midwest,East North Central,Illinois
+Midwest,East North Central,Indiana
+Midwest,East North Central,Michigan
+Midwest,East North Central,Ohio
+Midwest,East North Central,Wisconsin
+Midwest,East North Central,Iowa
+Midwest,East North Central,Kansas
+Midwest,East North Central,Minnesota
+Midwest,East North Central,Missouri
+Midwest,East North Central,Nebraska
+Midwest,East North Central,North Dakota
+Midwest,East North Central,South Dakota
+South,South Atlantic,Florida
+South,South Atlantic,Georgia
+South,South Atlantic,North Carolina
+South,South Atlantic,South Carolina
+South,South Atlantic,Virginia
+South,South Atlantic,Washington
+South,South Atlantic,District of Columbia
+South,South Atlantic,West Virginia
+South,East South Central,Alabama
+South,East South Central,Kentucky
+South,East South Central,Mississippi
+South,East South Central,Tennessee
+South,West South Central,Arkansas
+South,West South Central,Louisiana
+South,West South Central,Oklahoma
+South,West South Central,Texas
+West,Mountain,Arizona
+West,Mountain,Colorado
+West,Mountain,Idaho
+West,Mountain,Montana
+West,Mountain,Nevada
+West,Mountain,New Mexico
+West,Mountain,Utah
+West,Mountain,Wyoming
+West,Pacific,Alaska
+West,Pacific,California
+West,Pacific,Hawaii
+West,Pacific,Oregon
+West,Pacific,Washington

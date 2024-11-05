@@ -1,0 +1,88 @@
+
+.container {
+  /*width: 890px;*/
+}
+
+@media (max-width: 767px) {
+  h1 {
+    font-size: 2.1em;
+  }
+  #graphic {
+    padding-top: calc(100% - 10px);
+  }
+
+  body {
+    margin-top: 30px;
+  }
+}
+
+@media (min-width: 767px) {
+  #graphic {
+    padding-top: 60px;
+  }
+
+
+}
+
+#visFiller {
+/*height:800px;*/
+  /*background: blue;*/
+  /*width: 100%;*/
+}
+
+#sections {
+  /*position: relative;*/
+  /*display: inline-block;*/
+  /*width: 250px;*/
+  /*top: 0px;*/
+  z-index: 90;
+  /*float:right;*/
+  padding-bottom: 300px;
+  /*padding-top: 300px;*/
+}
+
+.step {
+  margin-bottom: 300px;
+  /*margin-top: 300px;*/
+  /* font-family: "TiemposTextWeb-Regular","Georgia"; */
+  font-size: 1.2em;
+  line-height: 23px;
+  color: #d4d4d4;
+  border-radius: 10px;
+}
+
+.step.last {
+  margin-bottom:20px;
+}
+
+#sections .title {
+  /* font-family: Arial,Helvetica,"san-serif"; */
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 2px;
+  color: #baaebd;
+  line-height: 1.2em;
+}
+
+#extra-space {
+  height: 20px;
+}
+
+#vis {
+  /*display: inline-block;*/
+  position: fixed;
+  top: 60px;
+  /*left: 0px;*/
+  z-index: 1;
+  margin-left: 0;
+  /*width: 550px;*/
+  /*background: cyan;*/
+  height: calc(100% - 70px);
+  /* height: 600px; */
+  width: 100%;
+  /* background-color: #ddd; */
+}
+
+canvas.bg, canvas.fg {
+  padding-left: 20px;
+}

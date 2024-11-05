@@ -1,0 +1,3 @@
+let YEAR = "2020";
+const LEFT = "DEMOCRAT",
+  RIGHT = "REPUBLICAN";

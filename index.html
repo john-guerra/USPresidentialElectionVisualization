@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en"></html>
+<head>
+  <meta charset="UTF-8"/>
+  <title>US Election Results 2020</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin"/>
+  <link href="https://fonts.googleapis.com/css2?family=Fjalla+One&amp;family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&amp;family=PT+Sans+Narrow:wght@400;700&amp;display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="./lib/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="./css/main.css"/>
+  <link rel="stylesheet" type="text/css" href="css/scroller.css"/>
+</head>
+<body></body>
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 col-xs-12">
+      <h1>US Presidential Election Results</h1>
+    </div>
+  </div>
+  <div class="sticky-top">
+    <div class="d-flex flex-row-reverse">
+      <div class="form-floating">
+        <select class="form-select" id="yearSelect" value="2020" aria-label="Year">
+          <option value="2020" selected="selected">2020</option>
+          <option value="2016">2016</option>
+          <option value="2012">2012</option>
+          <option value="2008">2008</option>
+          <option value="2004">2004</option>
+          <option value="2000">2000</option>
+        </select>
+        <label class="form-label" for="yearSelect">Year:</label>
+      </div>
+    </div>
+  </div>
+  <div class="row" id="graphic">
+    <div id="vis">
+      <div style="display:none;"><img id="imgTitle" src="img/title.png" width="100px"/></div>
+      <div class="col-xs-12 col-md-4" id="vTooltip">
+        <h3>Tooltip</h3>
+        <p>content</p>
+        <div id="barChart"></div>
+      </div>
+    </div>
+    <div class="col-md-8" id="visFiller"></div>
+    <div class="col-xs-12 col-md-4" id="sections">
+      <section class="step">
+        <h2 class="title">How did Americans vote in the 2020 Presidential Election?</h2>
+        <p>This is an analysis of the voting in the counties of the United States in the 2020 presidential election.</p>
+        <p>Scroll down to continue.</p>
+      </section>
+      <section class="step">
+        <h2 class="title">Let's visualize the results!</h2>
+        <p>But how? Maybe with a map of the United States...</p>
+      </section>
+      <section class="step">
+        <h2 class="title">Let's add colors</h2>
+        <p>We can use colors to differentiate who won in each state. If a state voted mostly for <span class="colorDemocrat">Democrats</span> it will be <span class="colorDemocrat">blue</span>, if it voted mostly for <span class="colorRepublican">Republicans</span> it will be <span class="colorRepublican">red</span>.</p>
+      </section>
+      <section class="step">
+        <h2 class="title">So is the US really that red?</h2>
+        <p>One of the problems with this graphic is that it does not show the individual results of the counties.</p>
+      </section>
+      <section class="step">
+        <h2 class="title">Results by county</h2>
+        <p>By counties the result is different, but also misleading, for several reasons...</p>
+      </section>
+      <section class="step">
+        <h2 class="title">Geographic area is misleading</h2>
+        <p>For example, even though <span id="exampleLeft"></span> and <span id="exampleRight"></span> have similar opposing results percent wise, they are very different in terms of population (<span id="exampleLeftPopulation"></span> vs <span id="exampleRightPopulation"></span>). </p>
+      </section>
+      <section class="step">
+        <h2 class="title">Use color shades</h2>
+        <p>Let's add a scale where darker colors represent higher differences, and lighter colors represent smaller differences.</p>
+      </section>
+      <section class="step">
+        <h2 class="title">What about the number of voters?</h2>
+        <p>Another problem with this map is that it shows the results by geographic area, and for example, rural counties have a lot of area but a small population.</p>
+      </section>
+      <section class="step">
+        <h2 class="title">A circle for each county</h2>
+        <p>Let's replace each county with a circle of the same size to make a more accurate visual comparison.</p>
+      </section>
+      <section class="step">
+        <h2 class="title">They don't fit!</h2>
+        <p>Another problem, the circles appear on top of each other 🤦🏻‍♂️...</p>
+      </section>
+      <section class="step">
+        <h2 class="title">Respect my bubble!</h2>
+        <p>Let's add a repulsion force that makes each circle try to avoid being on top of another.</p>
+      </section>
+      <section class="step">
+        <h2 class="title">But what about the number of voters?</h2>
+        <p>We still have the problem that all circles are the same size ☹️. How about we use the size of the circle...</p>
+      </section>
+      <section class="step">
+        <h2 class="title">Size matters (in this case)</h2>
+        <p>How about we use the <strong>area</strong> (not the radius) of the circles to represent the total number of voters.</p>
+      </section>
+      <section class="step">
+        <h2 class="title">Details</h2>
+        <p>If you want to know the values of each county, move the mouse over the center of the circle.</p>
+      </section>
+      <section class="step">
+        <h2 class="title">Now we can compare</h2>
+        <p>With this map it is a bit easier to see how the country voted.</p>
+      </section>
+      <section class="step">
+        <h2 class="title">Patterns by regions</h2>
+        <p>For example, it can be seen how counties near the border with Mexico voted more for <span class="colorDemocrat">Democrats</span>, and how in the Midwest more for <span class="colorRepublican">Republicans</span>.</p>
+      </section>
+      <section class="step">
+        <h2 class="title">Is this true for the entire region?</h2>
+        <p>With the map it is not so easy to know. (In reality, maps are not the best way to visualize data for most tasks 😉).</p>
+      </section>
+      <section class="step">
+        <h2 class="title">Let's remove the map then...</h2>
+        <p>Now we have more space to use. But the counties are still located by geographic position, which is no longer necessary.</p>
+      </section>
+      <section class="step">
+        <h2 class="title">All to the center</h2>
+        <p>Removing the geographic location allows us to use the location to encode more information. For example, horizontally by their result.</p>
+      </section>
+      <section class="step">
+        <h2 class="title">From left to right</h2>
+        <p>To differentiate the counties more easily, we can distribute them horizontally by how they voted. We send to the <span class="colorDemocrat">left</span> those who voted more for <span class="colorDemocrat">Democrats</span> and to the <span class="colorRepublican">right</span> those who voted more for <span class="colorRepublican">Republicans</span>.</p>
+      </section>
+      <section class="step">
+        <h2 class="title">What about the vertical location?</h2>
+        <p>We can use it to divide by regions.</p>
+      </section>
+      <section class="step">
+        <h2 class="title">Voting by Regions</h2>
+        <p>This graphic shows us how each region of the United States voted. Here we can observe, for example, how the West Coast voted more for <span class="colorDemocrat">Democrats</span>, versus regions more in the center and south of the country, which voted more for <span class="colorRepublican">Republicans</span>. This allows for easier comparison and understanding of the final election results.</p>
+      </section>
+      <section class="step">
+        <h2 class="title">Voting by population</h2>
+        <p>We can also change the vertical position to encode the number of voters by population.</p>
+      </section>
+      <section class="step last">
+        <h2 class="title">Thank you very much!</h2>
+        <p>Developed by <a href="http://johnguerra.co">John Alexis Guerra Gómez</a></p><br/>
+        <p>Using data from <a href="https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/VOQCHQ">MIT Election Data and Science Lab</a></p>
+        <blockquote>
+          | MIT Election Data and Science Lab, 2018, "County Presidential Election Returns 2000-2020", https://doi.org/10.7910/DVN/VOQCHQ, Harvard Dataverse, V13, UNF:6:GILlTHRWH0LbH2TItBsb2w== [fileUNF]
+          
+          
+        </blockquote>
+      </section>
+      <div id="extra-space"></div>
+    </div>
+  </div>
+</div>
+<script src="./lib/js/d3.v7.min.js"></script>
+<script src="./lib/js/d3-force-boundary.min.js"></script>
+<script src="./lib/js/topojson-client.min.js"></script>
+<script src="./lib/js/popper.min.js"></script>
+<script src="./lib/js/bootstrap.min.js"></script>
+<script src="./js/stackedBar.js"></script>
+<script src="js/rebind.js"></script>
+<script src="js/variables.js"></script>
+<script src="js/scrollerElections.js"></script>
+<script src="js/scroller.js"></script>
+<script src="js/sections.js"></script>
+<script src="./js/compareCities.js"></script>

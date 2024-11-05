@@ -1,0 +1,134 @@
+.colorRepublican {
+  color: rgb(245 180 152);
+  font-weight: bold;
+}
+
+.colorDemocrat {
+  color: rgb(189 218 233);
+  font-weight: bold;
+}
+
+h1, h2, h3, h4, h5, h6 {  
+  font-family: 'Fjalla One', sans-serif;
+}
+
+h1 {
+  font-size: 3.5em;
+}
+
+body {
+  background: #5c5a64;
+  color: #e2d4e6;
+  /* background: #5c5a64; */
+  font-family: "Old Standard TT", serif;
+  font-weight: 400;
+}
+.bar {
+  font-family: sans-serif;
+  font-size: 8pt;
+}
+#cityLegend {
+  font-family: sans-serif;
+  text-anchor: middle;
+}
+#details .background {
+  fill: #5c5a64;
+  fill-opacity: 0.7;
+}
+
+#inThreshold {
+  width: 100px;
+  display: inline-block;
+  margin-left: 10px;
+}
+svg {
+  width: 100%;
+}
+
+#barCharts .state {
+  margin-bottom: 15px;
+  /*clear:both;*/
+  /*float: left;*/
+}
+#barCharts .city {
+  /*margin-bottom:1px;*/
+  /*float: left;*/
+  /*width: 220px;*/
+  height: 1.2em;
+  overflow: hidden;
+  text-overflow: clip;
+  line-height: 1.2em;
+  height: 1.2em;
+  /*border-top: 0.5px solid #eee;*/
+}
+#barCharts .city:hover,
+#barCharts .capital.city:hover {
+  overflow: initial;
+  border: 1px solid #eee;
+  z-index: 10;
+}
+.fifty {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 0px;
+  left: 50%;
+  border-left: 1px dashed white;
+}
+#barCharts .city.capital {
+  border-width: 1px;
+  border-style: solid;
+  border-color: #444;
+}
+#barCharts .city .cityLabel {
+  font-size: 8pt;
+  font-family: sans-serif;
+  z-index: 10;
+  padding-left: 5px;
+  pointer-events: none;
+}
+#barCharts .city .cityCandidate {
+  z-index: -2;
+  height: 100%;
+  margin-bottom: 1px;
+}
+
+#vTooltip {
+  margin-top: -20px;
+  z-index: 99;
+  display: none;
+  position: absolute;
+  /*width:400px;*/
+  pointer-events: none;
+  background: #5c5a64aa;
+}
+
+#vis #vTooltip #barChart {
+  width: 100%;
+  /*margin-top: -1em;*/
+  position: relative;
+  height: 25px;
+  border: 1px solid #444;
+}
+
+#vis #vTooltip p {
+  line-height: 1.2em;
+  font-style: italic;
+  margin-bottom: 0.5em;
+}
+
+.step {
+  background: #5c5a6499;
+}
+
+#sections {
+  pointer-events: none;
+}
+
+.step {
+  pointer-events: auto;
+}
+
+.analisisSegundaVuelta {
+  width: 95%;
+}

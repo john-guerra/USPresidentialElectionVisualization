@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+html(lang="en")
+head
+  meta(charset="UTF-8")
+  title US Election Results 2020
+  meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
+  //- link(rel="stylesheet" href="./lib/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous")
+
+  meta(name="apple-mobile-web-app-capable" content="yes")
+  meta(name="apple-mobile-web-app-status-bar-style" content="black-translucent")
+  meta(name="viewport" content="width=device-width, initial-scale=1.0")
+
+  link(rel="preconnect", href="https://fonts.googleapis.com")
+  link(rel="preconnect", href="https://fonts.gstatic.com",crossorigin)
+  link(href="https://fonts.googleapis.com/css2?family=Fjalla+One&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=PT+Sans+Narrow:wght@400;700&display=swap",rel="stylesheet")
+  
+
+  link(rel="stylesheet" href="./lib/css/bootstrap.min.css")
+
+  link(rel="stylesheet", href="./css/main.css")
+  link(rel="stylesheet" type="text/css" href="css/scroller.css")
+body
+.container
+
+
+
+  //- span.
+  //-   <a href="https://github.com/john-guerra/resultadosSegundaVuelta2022_historia"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"></a>
+
+  .row
+    .col-md-12.col-xs-12
+      h1 US Presidential Election Results
+
+  
+  div.sticky-top
+    .d-flex.flex-row-reverse
+      .form-floating
+        select#yearSelect.form-select(value="2020", aria-label="Year")
+          option(value="2020", selected) 2020
+          option(value="2016") 2016
+          option(value="2012") 2012
+          option(value="2008") 2008
+          option(value="2004") 2004
+          option(value="2000") 2000
+        label.form-label(for="yearSelect") Year:
+
+  #graphic.row
+    #vis
+      div(style="display:none;")
+        img(id="imgTitle" src="img/title.png" width="100px")
+      div#vTooltip.col-xs-12.col-md-4
+        h3 Tooltip
+        p content
+        div#barChart
+
+    
+    
+
+    div.col-md-8#visFiller
+    #sections.col-xs-12.col-md-4
+      section.step
+        h2.title How did Americans vote in the 2020 Presidential Election?
+        p This is an analysis of the voting in the counties of the United States in the 2020 presidential election.
+        p Scroll down to continue.
+
+      section.step
+        h2.title Let's visualize the results!
+        p But how? Maybe with a map of the United States...
+
+      section.step
+        h2.title Let's add colors
+        p We can use colors to differentiate who won in each state. If a state voted mostly for #[span.colorDemocrat Democrats] it will be #[span.colorDemocrat blue], if it voted mostly for #[span.colorRepublican Republicans] it will be #[span.colorRepublican red].
+
+      section.step
+        h2.title So is the US really that red?
+        p One of the problems with this graphic is that it does not show the individual results of the counties.
+
+      section.step
+        h2.title Results by county
+        p By counties the result is different, but also misleading, for several reasons...
+
+      section.step
+        h2.title Geographic area is misleading
+        p For example, even though #[span#exampleLeft] and #[span#exampleRight] have similar opposing results percent wise, they are very different in terms of population (#[span#exampleLeftPopulation] vs #[span#exampleRightPopulation]). 
+
+      section.step
+        h2.title Use color shades
+        p Let's add a scale where darker colors represent higher differences, and lighter colors represent smaller differences.
+
+      section.step
+        h2.title What about the number of voters?
+        p Another problem with this map is that it shows the results by geographic area, and for example, rural counties have a lot of area but a small population.
+
+      section.step
+        h2.title A circle for each county
+        p Let's replace each county with a circle of the same size to make a more accurate visual comparison.
+
+      section.step
+        h2.title They don't fit!
+        p Another problem, the circles appear on top of each other 🤦🏻‍♂️...
+
+      section.step
+        h2.title Respect my bubble!
+        p Let's add a repulsion force that makes each circle try to avoid being on top of another.
+
+      section.step
+        h2.title But what about the number of voters?
+        p We still have the problem that all circles are the same size ☹️. How about we use the size of the circle...
+
+      section.step
+        h2.title Size matters (in this case)
+        p How about we use the #[strong area] (not the radius) of the circles to represent the total number of voters.
+
+      section.step
+        h2.title Details
+        p If you want to know the values of each county, move the mouse over the center of the circle.
+
+      section.step
+        h2.title Now we can compare
+        p With this map it is a bit easier to see how the country voted.
+
+      section.step
+        h2.title Patterns by regions
+        p For example, it can be seen how counties near the border with Mexico voted more for #[span.colorDemocrat Democrats], and how in the Midwest more for #[span.colorRepublican Republicans].
+
+      section.step
+        h2.title Is this true for the entire region?
+        p With the map it is not so easy to know. (In reality, maps are not the best way to visualize data for most tasks 😉).
+
+      section.step
+        h2.title Let's remove the map then...
+        p Now we have more space to use. But the counties are still located by geographic position, which is no longer necessary.
+
+      section.step
+        h2.title All to the center
+        p Removing the geographic location allows us to use the location to encode more information. For example, horizontally by their result.
+
+      section.step
+        h2.title From left to right
+        p To differentiate the counties more easily, we can distribute them horizontally by how they voted. We send to the #[span.colorDemocrat left] those who voted more for #[span.colorDemocrat Democrats] and to the #[span.colorRepublican right] those who voted more for #[span.colorRepublican Republicans].
+
+      section.step
+        h2.title What about the vertical location?
+        p We can use it to divide by regions.
+
+      section.step
+        h2.title Voting by Regions
+        p This graphic shows us how each region of the United States voted. Here we can observe, for example, how the West Coast voted more for #[span.colorDemocrat Democrats], versus regions more in the center and south of the country, which voted more for #[span.colorRepublican Republicans]. This allows for easier comparison and understanding of the final election results.
+
+      section.step
+        h2.title Voting by population
+        p We can also change the vertical position to encode the number of voters by population.
+
+      section.step.last
+        h2.title Thank you very much!
+        p Developed by #[a(href="http://johnguerra.co") John Alexis Guerra Gómez]
+        br
+        p Using data from #[a(href="https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/VOQCHQ") MIT Election Data and Science Lab]
+        blockquote.          
+          | MIT Election Data and Science Lab, 2018, "County Presidential Election Returns 2000-2020", https://doi.org/10.7910/DVN/VOQCHQ, Harvard Dataverse, V13, UNF:6:GILlTHRWH0LbH2TItBsb2w== [fileUNF]
+
+        
+      #extra-space
+
+
+
+
+script(src="./lib/js/d3.v7.min.js")
+script(src="./lib/js/d3-force-boundary.min.js")
+//- script(src="./lib/js/d3-queue.v3.min.js")
+//- script(src="./lib/js/d3-scale-chromatic.v1.min.js")
+script(src="./lib/js/topojson-client.min.js")
+//- script(src="./lib/js/d3-legend.min.js")
+//- script(src="./lib/js/jquery.min.js")
+//- script(src="./lib/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous")
+
+
+script(src="./lib/js/popper.min.js")
+script(src="./lib/js/bootstrap.min.js")
+
+script(src="./js/stackedBar.js")
+
+script(src="js/rebind.js")
+
+script(src="js/variables.js")
+script(src="js/scrollerElections.js")
+script(src="js/scroller.js")
+script(src="js/sections.js")
+
+
+
+
+//- script(src="./js/choropletColombia.js")
+//- script(src="./js/main.js")
+script(src="./js/compareCities.js")
+
+
+//- script.
+//-   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+//-   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+//-   m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+//-   })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+//-   ga('create', 'UA-72531610-1', 'auto');
+//-   ga('send', 'pageview');
