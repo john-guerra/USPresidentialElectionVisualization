@@ -12,11 +12,11 @@ function titleCase(str) {
 }
 
 function scrollerElections(electionData, mapData, regionsData) {
-  let margin = { left: 20, top: 20, right: 20, bottom: 20 },
+  let margin = { left: 10, top: 20, right: 30, bottom: 20 }, // changes later with the width
     dRegiones = {},
     dFeatures = {},
     regiones,
-    defaultR = 2,
+    defaultR = 3,
     collisionFactor = 1.1,
     forceToCentroid = 0.3,
     showMap = false,
@@ -25,7 +25,7 @@ function scrollerElections(electionData, mapData, regionsData) {
     useShades = false,
     height = 800,
     width = 600,
-    rFactor = 40,
+    rFactor = 35,
     r = width / rFactor,
     maxPct = 0.8,
     color = getColorScale(),
@@ -114,8 +114,11 @@ function scrollerElections(electionData, mapData, regionsData) {
         //   //   .rotate([74 + 30 / 60, -38 - 50 / 60])
         .fitExtent(
           [
-            [margin.left - (width < 700 ? 50 : 100), margin.top],
-            [width - margin.right, height - margin.bottom],
+            [margin.left, margin.top],
+            [
+              width - margin.right - margin.left,
+              height - margin.bottom - margin.top,
+            ],
           ],
           landState
         ),
@@ -188,11 +191,13 @@ function scrollerElections(electionData, mapData, regionsData) {
     // width = document.getElementById("visFiller").offsetWidth;
     height = parseInt(parseInt(d3.select("#vis").style("height"), 10));
 
+    margin.left = width < 700 ? 5 : margin.left;
     // larger circles on bigger screens
-    if (width > 600) defaultR = 3;
+    if (width < 700) defaultR = 2;
 
     function onChangeYear() {
       this.removeEventListener("input", onChangeYear);
+      d3.selectAll(".yearValue").text(this.value);
       simulation.stop();
       YEAR = this.value;
       filteredData = electionData.filter((d) => d.year === YEAR);
@@ -206,6 +211,7 @@ function scrollerElections(electionData, mapData, regionsData) {
       if (!circlesDancing) redrawMap();
     }
 
+    d3.selectAll(".yearValue").text(YEAR);
     document
       .getElementById("yearSelect")
       .addEventListener("change", onChangeYear);
@@ -364,29 +370,13 @@ function scrollerElections(electionData, mapData, regionsData) {
         } else {
           contextFg.globalAlpha = 1;
         }
-
+        contextFg.strokeStyle = "none";
         contextFg.fill();
         if (n === selected) {
           contextFg.strokeStyle = "orange";
           contextFg.stroke();
         }
       }
-
-      // if (selected) {
-      //   contextFg.lineWidth = 2;
-      //   contextFg.beginPath();
-      //   contextFg.arc(
-      //     selected.x,
-      //     selected.y,
-      //     useSize ? size(selected.totalVotes) : defaultR,
-      //     0,
-      //     2 * Math.PI
-      //   );
-      //   contextFg.stroke();
-      //   contextFg.fillStyle = "#777";
-      //   contextFg.textAlign = "center";
-      //   contextFg.fillText(selected.county_name, selected.x, selected.y + 2);
-      // }
 
       // Draw Labels
       for (const n of filteredData) {
@@ -525,8 +515,8 @@ function scrollerElections(electionData, mapData, regionsData) {
     simulation
       .velocityDecay(circlesDancing ? 0.05 : 0.4) // how fast they converge
       .force("x", forceX)
-      // .force("y", forceY)
-      .force("y", circlesDancing ? null : forceY)
+      .force("y", forceY)
+      // .force("y", circlesDancing ? null : forceY)
       .force(
         "boundary",
         circlesDancing

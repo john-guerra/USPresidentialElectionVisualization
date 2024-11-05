@@ -83,6 +83,6 @@
   /* background-color: #ddd; */
 }
 
-canvas.bg, canvas.fg {
-  padding-left: 20px;
-}
+/* canvas.bg, canvas.fg {
+  margin-left: 20px;
+} */
