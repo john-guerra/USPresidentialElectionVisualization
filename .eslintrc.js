@@ -6,7 +6,7 @@ module.exports = {
   },
   extends: ["eslint:recommended", "prettier"],
   parserOptions: {
-    ecmaVersion: "2024",
+    ecmaVersion: "2019",
     sourceType: "module",
     ecmaFeatures: {
       jsx: true,

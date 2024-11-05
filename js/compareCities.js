@@ -8,7 +8,7 @@ function compareCities(data) {
       (leaves) => {
         return {
           length: leaves.length,
-          totalVotes: d3.sum(leaves, (d) => d.totalVotes),
+          totalVotes: d3.sum(leaves, (d) => d.totalVotes[YEAR]),
           values: leaves,
         };
       },
@@ -17,10 +17,10 @@ function compareCities(data) {
     // .sortValues(
     //   (a, b) =>
     //     d3.descending(a[`${RIGHT} result`], b[`${RIGHT} result`]) ||
-    //     d3.descending(a.totalVotes, b.totalVotes)
+    //     d3.descending(a.totalVotes[YEAR], b.totalVotes[YEAR])
     // )
     .map(([key, value]) => ({ key, value }))
-    .sort((a, b) => d3.descending(a.value.totalVotes, b.value.totalVotes));
+    .sort((a, b) => d3.descending(a.value.totalVotes[YEAR], b.value.totalVotes[YEAR]));
 
   // var treemap = d3.treemap()
   //   .tile(d3.treemapResquarify)
@@ -31,9 +31,9 @@ function compareCities(data) {
   // var root = d3.hierarchy(
   //   {
   //     values:nestedData,
-  //     // totalVotes: d3.sum(nestedData, d => d.value.totalVotes )
+  //     // totalVotes: d3.sum(nestedData, d => d.value.totalVotes[YEAR] )
   //   }, d => d.values)
-  //   .sum(function (d) { return d.value? d.value.totalVotes : 0; })
+  //   .sum(function (d) { return d.value? d.value.totalVotes[YEAR] : 0; })
   //   .sort(function(a, b) { return b.height - a.height || b.value - a.value; });
 
   // var tree = treemap(root);
@@ -90,10 +90,10 @@ function pilledStackedChart() {
   function chart(selection) {
     selection.each(function (data) {
       data.forEach((state) => {
-        state.maxVotantes = d3.max(state.value.values, (d) => d.totalVotes);
-        state.minVotantes = d3.min(state.value.values, (d) => d.totalVotes);
+        state.maxVotantes = d3.max(state.value.values, (d) => d.totalVotes[YEAR]);
+        state.minVotantes = d3.min(state.value.values, (d) => d.totalVotes[YEAR]);
         state.value.values.forEach(
-          (city) => (city.capital = state.maxVotantes === city.totalVotes)
+          (city) => (city.capital = state.maxVotantes === city.totalVotes[YEAR])
         );
       });
       h.domain([
@@ -151,7 +151,7 @@ function pilledStackedChart() {
             // fmtPct(d["nulos_no_marcados"]) +
             "\n" +
             "Total Votes=" +
-            fmtM(d.totalVotes)
+            fmtM(d.totalVotes[YEAR])
           );
         })
         .classed("capital", (d) => d.capital);

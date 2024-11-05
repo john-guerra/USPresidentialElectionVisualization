@@ -55,7 +55,7 @@ function scrollerElections(electionData, mapData, regionsData) {
     titleImage = new Image(),
     fmtPct = d3.format(" >5.2%"),
     fmt = d3.format(" >5.2s"),
-    filteredData = electionData.filter((d) => d.year === YEAR);
+    groupedData = null; // set in init
   // stillWantTitle = false;
 
   // path2D = new Path2D();
@@ -97,13 +97,13 @@ function scrollerElections(electionData, mapData, regionsData) {
     });
 
     regiones = [...new Set(Object.values(dRegiones))];
-    console.log("regions", dRegiones, regiones);
   }
 
   function setupGeo() {
     land = topojson.feature(mapData, mapData.objects.counties);
     landState = topojson.feature(mapData, mapData.objects.states);
 
+    console.log("🗺️ projection", width, height);
     pathCanvas = d3.geoPath(
       d3
         .geoAlbersUsa()
@@ -133,8 +133,6 @@ function scrollerElections(electionData, mapData, regionsData) {
     landState.features.forEach((d) => {
       dFeatures[d.properties.name.toUpperCase()] = d;
     });
-
-    console.log("dFeatures", dFeatures);
   }
 
   // function doColorLegend() {
@@ -181,110 +179,228 @@ function scrollerElections(electionData, mapData, regionsData) {
   //   g.selectAll(".swatch").style("fill", color(0));
   // }
 
-  function chart(selection) {
-    // width =
-    //   selection.node().offsetWidth -
-    //   parseInt(parseInt(d3.select("#sections").style("width"), 10));
+  function onChangeYear() {
+    this.removeEventListener("input", onChangeYear);
+    d3.selectAll(".yearValue").text(this.value);
+    simulation.stop();
+    YEAR = this.value;
 
+    adjustWidth();
+    updateDomains();
+
+    // init();
+    simulation.nodes(groupedData).restart();
+    resetForces();
+    if (!circlesDancing) redrawMap();
+  }
+
+  function createCanvasContext(className, selection) {
+    let canvasSel = selection.selectAll("." + className).data([groupedData]);
+    canvasSel = canvasSel
+      .enter()
+      .append("canvas")
+      .attr("class", className)
+      .merge(canvasSel);
+
+    const context = canvasSel.node().getContext("2d");
+
+    const ratio = getPixelRatio();
+    console.log("createcanvas", width, height, ratio);
+    canvasSel.node().width = width * ratio;
+    canvasSel.node().height = height * ratio;
+    canvasSel.style("width", width + "px");
+    canvasSel.style("height", height + "px");
+    canvasSel.style("position", "absolute");
+    // canvasSel.style("max-height", "80%");
+    canvasSel.style("top", "0px");
+    canvasSel.style("left", "0px");
+    // canvasSel.attr("width", width + "px");
+    // canvasSel.attr("height", height + "px");
+    // context.setTransform(ratio, 0, 0, ratio, 0, 0);
+    context.scale(ratio, ratio);
+    // context.canvas.style.maxWidth = "100%";
+    // context.canvas.style.maxHeight = "100%";
+
+    context.font = "0.7em Fjalla One";
+
+    return context;
+  }
+
+  function ticked() {
+    // contextFg.globalAlpha = 1;
+    contextFg.clearRect(0, 0, width, height);
+
+    if (showCircles) {
+      drawNodes();
+    }
+
+    // Draw a reference line at 0 when circles by Pct
+    if (!xToCenter && !circlesByGeo) {
+      contextFg.save();
+      contextFg.beginPath();
+      contextFg.setLineDash([5, 3]);
+      contextFg.strokeStyle = "#aaa";
+
+      contextFg.moveTo(x(0), height * (yToCenter ? 0.3 : 0));
+      contextFg.lineTo(x(0), height * (yToCenter ? 0.7 : 0.95));
+      contextFg.stroke();
+      // contextFg.drawLine
+      contextFg.font = "0.6em Fjalla One";
+      contextFg.fillStyle = "#aaa";
+      contextFg.textAlign = "center";
+      contextFg.fillText("0%", x(0), height * (yToCenter ? 0.7 : 0.95) + 2);
+      contextFg.restore();
+    }
+  } //ticked
+
+  function drawNodes() {
+    contextFg.save();
+    for (const n of groupedData) {
+      let nr = useSize ? size(n.totalVotes[YEAR]) : defaultR;
+
+      contextFg.fillStyle = color(n.pct[YEAR]);
+      contextFg.beginPath();
+      contextFg.arc(n.x, n.y, nr, 0, 2 * Math.PI);
+      if (selected && selected.state !== n.state) {
+        contextFg.globalAlpha = 0.3;
+      } else {
+        contextFg.globalAlpha = 1;
+      }
+      contextFg.strokeStyle = "none";
+      contextFg.fill();
+      if (n === selected) {
+        contextFg.strokeStyle = "orange";
+        contextFg.stroke();
+      }
+    }
+
+    // Draw Labels
+    for (const n of groupedData) {
+      let nr = useSize ? size(n.totalVotes[YEAR]) : defaultR;
+      if ((!circlesDancing && nr > 9) || n === selected) {
+        contextFg.fillStyle = n.pct[YEAR] < 0 ? "#a14" : "#024D59";
+        contextFg.textAlign = "center";
+        contextFg.fillText(n.county_name, n.x, n.y + 2);
+      }
+    }
+
+    // Regions labels
+    if (!circlesByGeo && !yByPopulation && !yToCenter) {
+      contextFg.save();
+      contextFg.fillStyle = "#d4d4d4";
+      contextFg.font = "1.4em";
+      contextFg.textAlign = "left";
+      regiones.forEach((r) => {
+        contextFg.fillText(r, 30, y(r));
+      });
+      contextFg.restore();
+    }
+
+    contextFg.restore();
+  } // drawNodes
+
+  function adjustWidth() {
     width =
       parseInt(parseInt(d3.select("#visFiller").style("width"), 10)) || 400;
     // width = document.getElementById("visFiller").offsetWidth;
     height = parseInt(parseInt(d3.select("#vis").style("height"), 10));
-
     // larger circles on bigger screens
     if (width < 700) defaultR = 2;
-
-    function onChangeYear() {
-      this.removeEventListener("input", onChangeYear);
-      d3.selectAll(".yearValue").text(this.value);
-      simulation.stop();
-      YEAR = this.value;
-      filteredData = electionData.filter((d) => d.year === YEAR);
-
-      console.log("new year", this, YEAR, filteredData);
-      // redrawMap();
-
-      init();
-      simulation.nodes(filteredData).restart();
-      resetForces();
-      if (!circlesDancing) redrawMap();
-    }
-
-    d3.selectAll(".yearValue").text(YEAR);
-    document
-      .getElementById("yearSelect")
-      .addEventListener("change", onChangeYear);
-
-    init();
-
-    console.log("width, height", width, height, "r", r);
+    r = width / rFactor;
     // height = selection.node().offsetHeight;
+    console.log("width, height", width, height, "r", r, rFactor);
+  }
 
-    size.domain([0, d3.max(filteredData, (d) => d.totalVotes)]).range([1, r]);
+  function updateDomains() {
+    size
+      .domain([0, d3.max(groupedData, (d) => d.totalVotes[YEAR])])
+      .range([1, r]);
     x.range([0, width]);
     y.domain(regiones).range([height - 50, 50]);
     yPopulation.domain(size.domain()).range([height - 50, 50]);
+  }
 
-    function createCanvasContext(className) {
-      let canvasSel = selection.selectAll("." + className).data([filteredData]);
-      canvasSel = canvasSel
-        .enter()
-        .append("canvas")
-        .attr("class", className)
-        .merge(canvasSel);
-
-      const context = canvasSel.node().getContext("2d");
-
-      const ratio = getPixelRatio();
-      console.log("pixelRatio", ratio);
-      canvasSel.node().width = width * ratio;
-      canvasSel.node().height = height * ratio;
-      canvasSel.style("width", width + "px");
-      canvasSel.style("height", height + "px");
-      canvasSel.style("position", "absolute");
-      // canvasSel.style("max-height", "80%");
-      canvasSel.style("top", "0px");
-      canvasSel.style("left", "0px");
-      // canvasSel.attr("width", width + "px");
-      // canvasSel.attr("height", height + "px");
-      // context.setTransform(ratio, 0, 0, ratio, 0, 0);
-      context.scale(ratio, ratio);
-      // context.canvas.style.maxWidth = "100%";
-      // context.canvas.style.maxHeight = "100%";
-
-      context.font = "0.7em Fjalla One";
-
-      return context;
-    }
-
-    contextBg = createCanvasContext("bg");
-    contextFg = createCanvasContext("fg");
-
+  function setCentroids() {
     const alaskaCentroid = pathCanvas.centroid(
       landState.features.filter((d) => d.properties.name === "Alaska")[0]
     );
-    electionData.forEach((d) => {
+
+    groupedData.forEach((d) => {
       d.centroid = d.feat
         ? pathCanvas.centroid(d.feat)
         : d.state === "Alaska"
           ? alaskaCentroid
           : [(width / 6) * 4, (height / 8) * 7];
-      d.xPct = x(d.pct);
       d.yRegion = y(d.region) + y.bandwidth() / 2;
-      d.yPopulation = yPopulation(+d.totalVotes);
     });
+  }
+
+  function onHighlight(event) {
+    if (!showCircles) return;
+    selected = simulation.find(event.offsetX, event.offsetY);
+    ticked();
+
+    d3.select("#vTooltip")
+      .style("display", "block")
+      .select("p")
+      .html(
+        "Difference: " +
+          fmtPct(Math.abs(selected.pct[YEAR])) +
+          " favoring " +
+          (selected.pct[YEAR] > 0 ? " Republican " : " Democrat ") +
+          "<br>" +
+          "Total Votes:" +
+          fmt(selected.totalVotes[YEAR])
+      );
+
+    d3.select("#vTooltip")
+      .select("h3")
+      .text(selected.county_name + ", " + selected.state);
+
+    let bar = stackedBar().keys([
+      `${LEFT}_vot_result`,
+      "other result",
+      // "nulos_no_marcados",
+      `${RIGHT}_vot_result`,
+    ]);
+
+    const selectedForBarchart = {
+      ...selected,
+      [`${LEFT}_vot_result`]: selected[`${LEFT}_vot_result`][YEAR],
+      ["other result"]: selected["other result"][YEAR],
+      [`${RIGHT}_vot_result`]: selected[`${RIGHT}_vot_result`][YEAR],
+    };
+    console.log("barchart", selectedForBarchart);
+    d3.select("#barChart").datum(selectedForBarchart).call(bar);
+  } // onHighlight
+
+  function chart(selection) {
+    d3.selectAll(".yearValue").text(YEAR);
+    document
+      .getElementById("yearSelect")
+      .addEventListener("change", onChangeYear);
+
+    adjustWidth();
+    init();
+    updateDomains();
+
+
+    contextBg = createCanvasContext("bg", selection);
+    contextFg = createCanvasContext("fg", selection);
 
     selected = null;
 
-    console.log("🏋🏼‍♀️ Initializing force Simulation with ", filteredData.length);
-    simulation = d3.forceSimulation(filteredData).stop();
+    console.log("🏋🏼‍♀️ Initializing force Simulation with ", groupedData.length);
+    simulation = d3.forceSimulation(groupedData).stop();
+
+    setCentroids();
 
     resetForces();
 
     simulation.on("tick", ticked);
     // scramble();
 
-    // setTimeout(() => filteredData.forEach( n => {
+    // setTimeout(() => groupedData.forEach( n => {
     //   simulation.alpha(0.9).restart();scramble(); }) , 1000);
 
     d3.select(contextFg.canvas)
@@ -295,123 +411,18 @@ function scrollerElections(electionData, mapData, regionsData) {
       .on("click", onHighlight)
       .on("mousemove", onHighlight);
 
-    function onHighlight(event) {
-      if (!showCircles) return;
-      selected = simulation.find(event.offsetX, event.offsetY);
-      ticked();
-
-      d3.select("#vTooltip")
-        .style("display", "block")
-        .select("p")
-        .html(
-          "Difference: " +
-            fmtPct(Math.abs(selected.pct)) +
-            " favoring " +
-            (selected.pct > 0 ? " Republican " : " Democrat ") +
-            "<br>" +
-            "Total Votes:" +
-            fmt(selected.totalVotes)
-        );
-
-      d3.select("#vTooltip")
-        .select("h3")
-        .text(selected.county_name + ", " + selected.state);
-
-      let bar = stackedBar().keys([
-        `${LEFT}_vot_result`,
-        "other result",
-        // "nulos_no_marcados",
-        `${RIGHT}_vot_result`,
-      ]);
-
-      d3.select("#barChart").datum(selected).call(bar);
-    }
-
     // contextFg.globalCompositeOperation = "darken";
-
-    function ticked() {
-      // contextFg.globalAlpha = 1;
-      contextFg.clearRect(0, 0, width, height);
-
-      if (showCircles) {
-        drawNodes();
-      }
-
-      // Draw a reference line at 0 when circles by Pct
-      if (!xToCenter && !circlesByGeo) {
-        contextFg.save();
-        contextFg.beginPath();
-        contextFg.setLineDash([5, 3]);
-        contextFg.strokeStyle = "#aaa";
-
-        contextFg.moveTo(x(0), height * (yToCenter ? 0.3 : 0));
-        contextFg.lineTo(x(0), height * (yToCenter ? 0.7 : 0.95));
-        contextFg.stroke();
-        // contextFg.drawLine
-        contextFg.font = "0.6em Fjalla One";
-        contextFg.fillStyle = "#aaa";
-        contextFg.textAlign = "center";
-        contextFg.fillText("0%", x(0), height * (yToCenter ? 0.7 : 0.95) + 2);
-        contextFg.restore();
-      }
-    } //ticked
-
-    function drawNodes() {
-      contextFg.save();
-      for (const n of filteredData) {
-        let nr = useSize ? size(n.totalVotes) : defaultR;
-
-        contextFg.fillStyle = color(n.pct);
-        contextFg.beginPath();
-        contextFg.arc(n.x, n.y, nr, 0, 2 * Math.PI);
-        if (selected && selected.state !== n.state) {
-          contextFg.globalAlpha = 0.3;
-        } else {
-          contextFg.globalAlpha = 1;
-        }
-        contextFg.strokeStyle = "none";
-        contextFg.fill();
-        if (n === selected) {
-          contextFg.strokeStyle = "orange";
-          contextFg.stroke();
-        }
-      }
-
-      // Draw Labels
-      for (const n of filteredData) {
-        let nr = useSize ? size(n.totalVotes) : defaultR;
-        if ((!circlesDancing && nr > 9) || n === selected) {
-          contextFg.fillStyle = n.pct < 0 ? "#a14" : "#024D59";
-          contextFg.textAlign = "center";
-          contextFg.fillText(n.county_name, n.x, n.y + 2);
-        }
-      }
-
-      // Regions labels
-      if (!circlesByGeo && !yByPopulation && !yToCenter) {
-        contextFg.save();
-        contextFg.fillStyle = "#d4d4d4";
-        contextFg.font = "1.4em";
-        contextFg.textAlign = "left";
-        regiones.forEach((r) => {
-          contextFg.fillText(r, 30, y(r));
-        });
-        contextFg.restore();
-      }
-
-      contextFg.restore();
-    } // drawNodes
   } // chart
 
   function scramble() {
-    filteredData.forEach((n) => {
+    groupedData.forEach((n) => {
       n.x = Math.random() * width;
       n.y = 0;
     });
   }
 
   function setNodesToMap() {
-    filteredData.forEach((n) => {
+    groupedData.forEach((n) => {
       n.x = n.centroid[0];
       n.y = n.centroid[1];
     });
@@ -441,7 +452,7 @@ function scrollerElections(electionData, mapData, regionsData) {
     contextBg.lineJoin = "round";
     contextBg.lineCap = "round";
 
-    totalsByState.forEach((d) => {
+    totalsByState[YEAR].forEach((d) => {
       contextBg.beginPath();
       contextBg.strokeStyle = "#666";
       contextBg.lineWidth = 0.7;
@@ -458,10 +469,10 @@ function scrollerElections(electionData, mapData, regionsData) {
   function drawCities() {
     contextBg.save();
     contextBg.lineWidth = 0.5;
-    filteredData.forEach((d) => {
+    groupedData.forEach((d) => {
       contextBg.beginPath();
       contextBg.strokeStyle = "#bbbe";
-      contextBg.fillStyle = color(d.pct);
+      contextBg.fillStyle = color(d.pct[YEAR]);
       pathCanvas(d.feat);
       if (choroplet) {
         contextBg.fill();
@@ -472,7 +483,6 @@ function scrollerElections(electionData, mapData, regionsData) {
   }
 
   function drawTitle() {
-    console.log("drawTitle");
     titleImage.src = "./img/title.png";
 
     // stillWantTitle = true;
@@ -496,7 +506,7 @@ function scrollerElections(electionData, mapData, regionsData) {
   function resetForces(restart) {
     const forceX = d3
         .forceX((d) =>
-          xToCenter ? width / 2 : circlesByGeo ? d.centroid[0] : d.xPct
+          xToCenter ? width / 2 : circlesByGeo ? d.centroid[0] : x(d.pct[YEAR])
         )
         .strength(xToCenter ? 0.1 : (height / width) * forceToCentroid),
       forceY = d3
@@ -506,12 +516,13 @@ function scrollerElections(electionData, mapData, regionsData) {
             : circlesByGeo
               ? d.centroid[1]
               : yByPopulation
-                ? d.yPopulation
+                ? yPopulation(+d.totalVotes[YEAR])
                 : d.yRegion
         )
         .strength(yToCenter ? 0.1 : (width / height) * forceToCentroid);
 
     simulation
+
       .velocityDecay(circlesDancing ? 0.05 : 0.4) // how fast they converge
       .force("x", forceX)
       .force("y", forceY)
@@ -532,11 +543,17 @@ function scrollerElections(electionData, mapData, regionsData) {
           ? d3
               .forceCollide(
                 (d) =>
-                  (useSize ? size(d.totalVotes) : defaultR) * collisionFactor
+                  (useSize ? size(d.totalVotes[YEAR]) : defaultR) *
+                  collisionFactor
               )
               .iterations(4)
           : () => {}
       ); // no collision
+
+    console.log("Simulation resetForces", simulation.alpha());
+    // simulation.stop();
+    // for (let i = 0; i < 100; i++) simulation.tick();
+    // simulation.restart();
 
     restart = restart !== undefined ? restart : true;
     if (restart === true) simulation.alpha(0.7);
@@ -550,22 +567,22 @@ function scrollerElections(electionData, mapData, regionsData) {
 
     // Exampe Right
     let exampleRight;
-    for (let d of electionData.sort((a, b) => a.pct - b.pct)) {
+    for (let d of electionData.sort((a, b) => a.pct[YEAR] - b.pct[YEAR])) {
       exampleRight = d;
-      if (d.pct > -1 * exampleLeft.pct) break;
+      if (d.pct[YEAR] > -1 * exampleLeft.pct[YEAR]) break;
     }
 
     d3.select("#exampleLeft").html(
-      `${exampleLeft.county_name}, ${exampleLeft.state} <span class="colorDemocrat">${fmtPct(exampleLeft.pct)}</span>`
+      `${exampleLeft.county_name}, ${exampleLeft.state} <span class="colorDemocrat">${fmtPct(exampleLeft.pct[YEAR])}</span>`
     );
     d3.select("#exampleRight").html(
-      `${exampleRight.county_name}, ${exampleRight.state} <span class="colorRepublican">${fmtPct(exampleRight.pct)}</span>`
+      `${exampleRight.county_name}, ${exampleRight.state} <span class="colorRepublican">${fmtPct(exampleRight.pct[YEAR])}</span>`
     );
     d3.select("#exampleLeftPopulation").html(
-      `<span class="colorDemocrat">${fmt(exampleLeft.totalVotes)}</span>`
+      `<span class="colorDemocrat">${fmt(exampleLeft.totalVotes[YEAR])}</span>`
     );
     d3.select("#exampleRightPopulation").html(
-      `<span class="colorRepublican">${fmt(exampleRight.totalVotes)}</span>`
+      `<span class="colorRepublican">${fmt(exampleRight.totalVotes[YEAR])}</span>`
     );
   }
 
@@ -602,31 +619,56 @@ function scrollerElections(electionData, mapData, regionsData) {
       // : "Consulados";
     });
 
-    totalsByState = d3
+    // Group data by YEARS
+    groupedData = d3
       .rollups(
-        filteredData,
+        electionData,
         (v) => ({
-          meanPct: d3.mean(v, (d) => d.pct),
-          totalVotes: d3.sum(v, (d) => d.totalVotes),
-          [LEFT]: d3.sum(v, (d) => d[LEFT]),
-          [RIGHT]: d3.sum(v, (d) => d[RIGHT]),
-          "other sum": d3.sum(v, (d) => d["other sum"]),
+          ...v[0],
+          totalVotes: Object.fromEntries(v.map((d) => [d.year, d.totalVotes])),
+          [LEFT]: Object.fromEntries(v.map((d) => [d.year, d[LEFT]])),
+          [`${LEFT}_vot_result`]: Object.fromEntries(
+            v.map((d) => [d.year, d[`${LEFT}_vot_result`]])
+          ),
+          [RIGHT]: Object.fromEntries(v.map((d) => [d.year, d[RIGHT]])),
+          [`${RIGHT}_vot_result`]: Object.fromEntries(
+            v.map((d) => [d.year, d[`${RIGHT}_vot_result`]])
+          ),
+          pct: Object.fromEntries(v.map((d) => [d.year, d.pct])),
+          ["other sum"]: Object.fromEntries(
+            v.map((d) => [d.year, d["other sum"]])
+          ),
         }),
-        (d) => d.state
+        (d) => `${d.county_fips} ${d.county_name} ${d.state}`
       )
-      .map(([key, d]) => ({
-        ...d,
-        key,
-        value: (d[RIGHT] - d[LEFT]) / d.totalVotes,
-      }));
+      .map(([, d]) => d); // we only need the values
+    console.log("groupedData", groupedData);
 
-    totalsByState.forEach((d) => {
-      d.feat = dFeatures[d.key];
-    });
-
-    console.log("💯 totalsByState", totalsByState);
-
-    r = width / rFactor;
+    totalsByState = Object.fromEntries(
+      d3
+        .rollups(
+          electionData,
+          (v) => ({
+            meanPct: d3.mean(v, (d) => d.pct),
+            totalVotes: d3.sum(v, (d) => d.totalVotes),
+            [LEFT]: d3.sum(v, (d) => d[LEFT]),
+            [RIGHT]: d3.sum(v, (d) => d[RIGHT]),
+            "other sum": d3.sum(v, (d) => d["other sum"]),
+          }),
+          (d) => d.year,
+          (d) => d.state
+        )
+        .map(([year, rest]) => [
+          year,
+          rest.map(([key, d]) => ({
+            ...d,
+            key,
+            value: (d[RIGHT] - d[LEFT]) / d.totalVotes,
+            feat: dFeatures[d.key],
+          })),
+        ])
+    );
+    console.log("totalsByState", totalsByState);
 
     showExampleValues();
   } // init
@@ -642,13 +684,13 @@ function scrollerElections(electionData, mapData, regionsData) {
     redrawMap();
     return chart;
   };
-  chart.r = function (_) {
+  chart.r = function (_, restart) {
     // stillWantTitle = false;
     if (!arguments.length) {
       return r;
     }
     r = _;
-    simulation.restart();
+    if (restart) simulation.restart();
     return chart;
   };
   chart.collision = function (_, restart) {
