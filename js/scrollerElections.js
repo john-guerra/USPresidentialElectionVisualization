@@ -12,7 +12,7 @@ function titleCase(str) {
 }
 
 function scrollerElections(electionData, mapData, regionsData) {
-  let margin = { left: 10, top: 20, right: 30, bottom: 20 }, // changes later with the width
+  let margin = { left: 30, top: 20, right: 30, bottom: 20 }, // changes later with the width
     dRegiones = {},
     dFeatures = {},
     regiones,
@@ -191,7 +191,6 @@ function scrollerElections(electionData, mapData, regionsData) {
     // width = document.getElementById("visFiller").offsetWidth;
     height = parseInt(parseInt(d3.select("#vis").style("height"), 10));
 
-    margin.left = width < 700 ? 5 : margin.left;
     // larger circles on bigger screens
     if (width < 700) defaultR = 2;
 

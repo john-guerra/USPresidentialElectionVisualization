@@ -128,3 +128,7 @@ svg {
 .step {
   pointer-events: auto;
 }
+
+a {
+  color: rgb(191 217 255);
+}
