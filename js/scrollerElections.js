@@ -561,16 +561,17 @@ function scrollerElections(electionData, mapData, regionsData) {
 
   function showExampleValues() {
     // Example Left New York
-    let exampleLeft = electionData.filter(
+    let exampleLeft = groupedData.filter(
       (d) => d.state === "New York" && d.county_name === "New York"
     )[0];
 
     // Exampe Right
     let exampleRight;
-    for (let d of electionData.sort((a, b) => a.pct[YEAR] - b.pct[YEAR])) {
+    for (let d of groupedData.sort((a, b) => a.pct[YEAR] - b.pct[YEAR])) {
       exampleRight = d;
       if (d.pct[YEAR] > -1 * exampleLeft.pct[YEAR]) break;
     }
+    console.log("Examples", exampleLeft, exampleRight);
 
     d3.select("#exampleLeft").html(
       `${exampleLeft.county_name}, ${exampleLeft.state} <span class="colorDemocrat">${fmtPct(exampleLeft.pct[YEAR])}</span>`
