@@ -274,30 +274,33 @@ function scrollerElections(electionData, mapData, regionsData) {
         contextFg.stroke();
       }
     }
+    contextFg.restore();
 
+    contextFg.save();
     // Draw Labels
     for (const n of groupedData) {
       let nr = useSize ? size(n.totalVotes[YEAR]) : defaultR;
       if ((!circlesDancing && nr > 9) || n === selected) {
-        contextFg.fillStyle = n.pct[YEAR] < 0 ? "#a14" : "#024D59";
+        contextFg.fillStyle = n.pct[YEAR] < 0 ? "#814" : "#024D59";
+        // contextFg.fillStyle = "#722";
         contextFg.textAlign = "center";
         contextFg.fillText(n.county_name, n.x, n.y + 2);
       }
     }
+    contextFg.restore();
 
+    contextFg.save();
     // Regions labels
     if (!circlesByGeo && !yByPopulation && !yToCenter) {
-      contextFg.save();
       contextFg.fillStyle = "#d4d4d4";
       contextFg.font = "1.4em";
       contextFg.textAlign = "left";
       regiones.forEach((r) => {
         contextFg.fillText(r, 30, y(r));
       });
-      contextFg.restore();
     }
-
     contextFg.restore();
+
   } // drawNodes
 
   function adjustWidth() {
@@ -455,8 +458,8 @@ function scrollerElections(electionData, mapData, regionsData) {
 
     totalsByState[YEAR].forEach((d) => {
       contextBg.beginPath();
-      contextBg.strokeStyle = "#666";
-      contextBg.lineWidth = 0.7;
+      contextBg.strokeStyle = "#999";
+      contextBg.lineWidth = 0.9;
       contextBg.fillStyle = color(d.value);
       pathCanvas(dFeatures[d.key.toUpperCase()]);
       if (choroplet && !byCities) {
@@ -472,7 +475,7 @@ function scrollerElections(electionData, mapData, regionsData) {
     contextBg.lineWidth = 0.5;
     groupedData.forEach((d) => {
       contextBg.beginPath();
-      contextBg.strokeStyle = "#bbbe";
+      contextBg.strokeStyle = "#ddd3";
       contextBg.fillStyle = color(d.pct[YEAR]);
       pathCanvas(d.feat);
       if (choroplet) {
