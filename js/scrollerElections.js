@@ -187,6 +187,7 @@ function scrollerElections(electionData, mapData, regionsData) {
 
     adjustWidth();
     updateDomains();
+    showExampleValues();
 
     // init();
     simulation.nodes(groupedData).restart();
