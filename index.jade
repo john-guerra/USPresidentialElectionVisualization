@@ -2,7 +2,7 @@
 html(lang="en")
 head
   meta(charset="UTF-8")
-  title US Election Results 2000-2020
+  title US Election Results 2000-2024
   meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
   //- link(rel="stylesheet" href="./lib/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous")
 
@@ -13,7 +13,7 @@ head
   link(rel="preconnect", href="https://fonts.googleapis.com")
   link(rel="preconnect", href="https://fonts.gstatic.com",crossorigin)
   link(href="https://fonts.googleapis.com/css2?family=Fjalla+One&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=PT+Sans+Narrow:wght@400;700&display=swap",rel="stylesheet")
-  
+
 
   link(rel="stylesheet" href="./lib/css/bootstrap.min.css")
 
@@ -24,18 +24,19 @@ body
 
   span.d-flex.flex-row-reverse
     <a class="github-button" href="https://github.com/john-guerra/USPresidentialElectionVisualization" data-color-scheme="no-preference: dark; light: light; dark: dark;" data-icon="octicon-star" data-size="large" aria-label="Star john-guerra/USPresidentialElectionVisualization on GitHub">Star</a>
-  
+
 
   .row
     .col-md-12.col-xs-12
       h1 US Presidential Election Results
 
-  
+
   div.sticky-top
     .d-flex.flex-row-reverse
       .form-floating
         select#yearSelect.form-select(value="2020", aria-label="Year")
-          option(value="2020", selected) 2020
+          option(value="2024", selected) 2024
+          option(value="2020") 2020
           option(value="2016") 2016
           option(value="2012") 2012
           option(value="2008") 2008
@@ -52,8 +53,8 @@ body
         p content
         div#barChart
 
-    
-    
+
+
 
     div.col-md-8#visFiller
     #sections.col-xs-12.col-md-4
@@ -85,7 +86,7 @@ body
 
       section.step
         h2.title Geographic area is misleading
-        p For example, even though #[span#exampleLeft] and #[span#exampleRight] have similar opposing results percent wise, they are very different in terms of population (#[span#exampleLeftPopulation] vs #[span#exampleRightPopulation]). 
+        p For example, even though #[span#exampleLeft] and #[span#exampleRight] have similar opposing results percent wise, they are very different in terms of population (#[span#exampleLeftPopulation] vs #[span#exampleRightPopulation]).
 
 
       section.step
@@ -154,14 +155,15 @@ body
 
       #extra-space
       section.step.last
-        h2.title Thank you! 
+        h2.title Thank you!
         p Thanks for making it this far, I hope you liked it. If you have any questions or suggestion feel free to reach out via social media, just search for #[a(href="http://johnguerra.co") John Alexis Guerra Gómez].
         br
         p Using data from #[a(href="https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/VOQCHQ") MIT Election Data and Science Lab]
-        blockquote.          
+        blockquote.
           MIT Election Data and Science Lab, 2018, "County Presidential Election Returns 2000-2020", https://doi.org/10.7910/DVN/VOQCHQ, Harvard Dataverse, V13, UNF:6:GILlTHRWH0LbH2TItBsb2w== [fileUNF]
+        p 2024 Data from #[a(href="https://github.com/tonmcg/US_County_Level_Election_Results_08-24") https://github.com/tonmcg/US_County_Level_Election_Results_08-24]
 
-        
+
       #extra-space
       #extra-space
 

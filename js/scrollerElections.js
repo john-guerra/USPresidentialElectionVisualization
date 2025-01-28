@@ -12,20 +12,20 @@ function titleCase(str) {
 }
 
 function scrollerElections(electionData, mapData, regionsData) {
-  let margin = { left: 30, top: 20, right: 30, bottom: 20 }, // changes later with the width
+  let margin = { left: -10, top: 10, right: 10, bottom: 10 }, // changes later with the width
     dRegiones = {},
     dFeatures = {},
     regiones,
     defaultR = 3,
     collisionFactor = 1.1,
-    forceToCentroid = 0.3,
+    forceToCentroid = 0.2,
     showMap = false,
     byCities = false, // Draw the cities borders
     collision = false,
     useShades = false,
     height = 800,
     width = 600,
-    rFactor = 35,
+    rFactor = 40,
     r = width / rFactor,
     maxPct = 0.8,
     color = getColorScale(),
@@ -190,8 +190,12 @@ function scrollerElections(electionData, mapData, regionsData) {
     showExampleValues();
 
     // init();
+    // simulation.stop();
     simulation.nodes(groupedData).restart();
     resetForces();
+    // console.log("🏋🏼‍♀️ Simulation speedup", YEAR, simulation.alpha());
+    // for (let i = 0; i < 100; i++) simulation.tick();
+
     if (!circlesDancing) redrawMap();
   }
 
@@ -300,7 +304,6 @@ function scrollerElections(electionData, mapData, regionsData) {
       });
     }
     contextFg.restore();
-
   } // drawNodes
 
   function adjustWidth() {
@@ -387,7 +390,6 @@ function scrollerElections(electionData, mapData, regionsData) {
     adjustWidth();
     init();
     updateDomains();
-
 
     contextBg = createCanvasContext("bg", selection);
     contextFg = createCanvasContext("fg", selection);
@@ -523,10 +525,9 @@ function scrollerElections(electionData, mapData, regionsData) {
                 ? yPopulation(+d.totalVotes[YEAR])
                 : d.yRegion
         )
-        .strength(yToCenter ? 0.1 : (width / height) * forceToCentroid);
+        .strength(yToCenter ? 0.07 : (width / height) * forceToCentroid);
 
     simulation
-
       .velocityDecay(circlesDancing ? 0.05 : 0.4) // how fast they converge
       .force("x", forceX)
       .force("y", forceY)
@@ -554,10 +555,7 @@ function scrollerElections(electionData, mapData, regionsData) {
           : () => {}
       ); // no collision
 
-    console.log("Simulation resetForces", simulation.alpha());
-    // simulation.stop();
-    // for (let i = 0; i < 100; i++) simulation.tick();
-    // simulation.restart();
+    console.log("🏋🏼‍♀️ Simulation resetForces", simulation.alpha());
 
     restart = restart !== undefined ? restart : true;
     if (restart === true) simulation.alpha(0.7);
@@ -644,7 +642,7 @@ function scrollerElections(electionData, mapData, regionsData) {
             v.map((d) => [d.year, d["other sum"]])
           ),
         }),
-        (d) => `${d.county_fips} ${d.county_name} ${d.state}`
+        (d) => `${+d.county_fips}`
       )
       .map(([, d]) => d); // we only need the values
     console.log("groupedData", groupedData);

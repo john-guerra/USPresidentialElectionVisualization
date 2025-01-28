@@ -5,7 +5,7 @@
  * using reusable charts pattern:
  * http://bost.ocks.org/mike/chart/
  */
-var scrollVis = function() {
+var scrollVis = function () {
   "use strict";
   // constants to define the size
   // and margins of the vis area.
@@ -28,12 +28,9 @@ var scrollVis = function() {
   var grayingOutList = [];
   var grayedOutList = [];
 
-
   // Variable to control how much should the nodes be grayed out
   var grayedLevel = 1.0;
-  var grayedScale = d3.scaleLinear()
-    .domain([0, 1.0])
-    .range([1.0, 0.3]);
+  var grayedScale = d3.scaleLinear().domain([0, 1.0]).range([1.0, 0.3]);
 
   var activateFunctions = {};
   // If a section has an update function
@@ -41,7 +38,6 @@ var scrollVis = function() {
   // through the section with the current
   //  through the section.
   var updateFunctions = {};
-
 
   // The visualization instance
   var scrollViz = null;
@@ -53,16 +49,13 @@ var scrollVis = function() {
    *  to draw the visualization in. For this
    *  example, we will be drawing it in #vis
    */
-  var chart = function(selection) {
-    selection.each(function(data) {
-
+  var chart = function (selection) {
+    selection.each(function (data) {
       scrollViz = scrollerElections(data[0], data[1], data[2]);
 
       selection.call(scrollViz);
 
-
       setupSections();
-
     });
   }; //chart
 
@@ -75,14 +68,11 @@ var scrollVis = function() {
    *  element for each filler word type.
    * @param histData - binned histogram data
    */
-  var setupVis = function(data) {
-
+  var setupVis = function (data) {
     // d3.select("#nodeCount").text(data.nodes.filter(function (d) { return d.influential===false; }).length )
   };
 
-  var setupData = function(graph) {
-
-  };
+  var setupData = function (graph) {};
 
   /**
    * setupSections - each section is activated
@@ -91,7 +81,7 @@ var scrollVis = function() {
    * the section"s index.
    *
    */
-  var setupSections = function() {
+  var setupSections = function () {
     var STEPS = 24;
 
     var nothingFn = function () {};
@@ -123,9 +113,8 @@ var scrollVis = function() {
       setYRegions,
       setYPopulation,
       nothingFn,
-      nothingFn
+      nothingFn,
     ];
-
 
     // updateFunctions are called while
     // in a particular section to update
@@ -133,13 +122,12 @@ var scrollVis = function() {
     // Most sections do not need to be updated
     // for all scrolling and so are set to
     // no-op functions.
-    for(var i = 0; i < STEPS; i++) {
+    for (var i = 0; i < STEPS; i++) {
       updateFunctions[i] = nothingFn;
     }
     // updateFunctions[7] = updateGrayed;
     // updateFunctions[8] = updateGrayed;
   };
-
 
   /**
    * ACTIVATE FUNCTIONS
@@ -209,7 +197,6 @@ var scrollVis = function() {
   function removeMap() {
     scrollViz.showMap(false);
     scrollViz.circlesByGeo(true);
-
   }
 
   function centerNodes() {
@@ -233,27 +220,21 @@ var scrollVis = function() {
     scrollViz.yByPopulation(true);
   }
 
-  function showBarcharts() {
-
-  }
-
+  function showBarcharts() {}
 
   function showSubTitle() {
     // simulation.stop();
     // context.clearRect(0, 0, width, height);
     // context.save();
-
     // context.textAlign="center";
     // context.fillStyle = "black";
     // context.font = "40px Arial";
     // context.fillText("IEEEVIS most followed",width/2,height/2);
-
     // context.restore();
   }
 
   // Update functions
   function updateGrayed(progress) {
-
     grayedLevel = grayedScale(progress);
     // simulation.restart();
     // console.log(progress + "," + grayedLevel);
@@ -264,12 +245,12 @@ var scrollVis = function() {
    *
    * @param index - index of the activated section
    */
-  chart.activate = function(index) {
+  chart.activate = function (index) {
     console.log("Activate ", index, activateFunctions.length);
     activeIndex = index;
-    var sign = (activeIndex - lastIndex) < 0 ? -1 : 1;
+    var sign = activeIndex - lastIndex < 0 ? -1 : 1;
     var scrolledSections = d3.range(lastIndex + sign, activeIndex + sign, sign);
-    scrolledSections.forEach(function(i) {
+    scrolledSections.forEach(function (i) {
       activateFunctions[i]();
     });
     lastIndex = activeIndex;
@@ -281,14 +262,13 @@ var scrollVis = function() {
    * @param index
    * @param progress
    */
-  chart.update = function(index, progress) {
+  chart.update = function (index, progress) {
     updateFunctions[index](progress);
   };
 
   // return chart function
   return chart;
 };
-
 
 /**
  * display - called once data
@@ -298,45 +278,42 @@ var scrollVis = function() {
  *
  * @param data - loaded tsv data
  */
-var display = function(mData) {
+var display = function (mData) {
   console.log("Data loaded");
   // create a new plot and
   // display it
   var plot = scrollVis();
-  d3.select("#vis")
-    .datum(mData)
-    .call(plot);
-
+  d3.select("#vis").datum(mData).call(plot);
 
   // setup scroll functionality
-  var scroll = scroller()
-    .container(d3.select("#graphic"));
+  var scroll = scroller().container(d3.select("#graphic"));
 
   // pass in .step selection as the steps
   scroll(d3.selectAll(".step"));
 
   // setup event handling
-  scroll.on("active", function(index) {
+  scroll.on("active", function (index) {
     // highlight current step text
-    d3.selectAll(".step")
-      .style("opacity",  function(d,i) { return i == index ? 1 : 0.1; });
+    d3.selectAll(".step").style("opacity", function (d, i) {
+      return i == index ? 1 : 0.1;
+    });
 
     // activate current section
     plot.activate(index);
     console.log("Activate " + index);
   });
 
-  scroll.on("progress", function(index, progress){
+  scroll.on("progress", function (index, progress) {
     plot.update(index, progress);
   });
 };
 
+// 2024 data from https://github.com/tonmcg/US_County_Level_Election_Results_08-24
+Promise.all([
+  d3.csv("./data/2000_2024_US_County_Level_Presidential_Results.csv"),
 
-Promise.all(
-  [
-    d3.csv("./data/2000_2020_US_County_Level_Presidential_Results.csv"),
-    d3.json("./data/counties-10m.json"),
-    d3.csv("./data/US_Regions.csv") // https://en.wikipedia.org/wiki/List_of_regions_of_the_United_States
-  ]
-).then(display);
-
+  d3.json("./data/counties-10m.json"),
+  d3.csv(
+    "./data/US_Regions.csv" // https://en.wikipedia.org/wiki/List_of_regions_of_the_United_States
+  ),
+]).then(display);

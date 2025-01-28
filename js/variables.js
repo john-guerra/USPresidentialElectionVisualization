@@ -1,3 +1,3 @@
-let YEAR = "2020";
+let YEAR = "2024";
 const LEFT = "DEMOCRAT",
   RIGHT = "REPUBLICAN";
