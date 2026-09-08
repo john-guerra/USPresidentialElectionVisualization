@@ -1,4 +1,4 @@
-/* global d3, topojson, stackedBar, LEFT, RIGHT, YEAR, forceBoundary, createYearOdometer */
+/* global d3, topojson, stackedBar, LEFT, RIGHT, forceBoundary, createYearOdometer, YEAR:writable */
 
 // https://www.freecodecamp.org/news/three-ways-to-title-case-a-sentence-in-javascript-676a9175eb27/
 function titleCase(str) {
@@ -60,7 +60,9 @@ function scrollerElections(electionData, mapData, regionsData) {
     // *displayed* values; everything that draws or positions reads those
     // rather than pct[YEAR], so a year change can be interpolated.
     yearTimer = null,
-    setYearOdometer = null;
+    setYearOdometer = null,
+    container = null,
+    resizeTimer = null;
   // stillWantTitle = false;
 
   // path2D = new Path2D();
@@ -77,6 +79,18 @@ function scrollerElections(electionData, mapData, regionsData) {
         ctx.backingStorePixelRatio ||
         1;
     return dpr / bsr;
+  }
+
+  // 31 FIPS codes are not present in every year: counties created (Broomfield
+  // CO, 2001), dissolved (Bedford VA, 2013), renamed (Shannon SD -> Oglala
+  // Lakota SD, 2015), reorganized (the 8 Connecticut counties became 9 planning
+  // regions in 2022), plus reporting artifacts (DC wards, Kansas City MO).
+  //
+  // Only the rename is a clean 1:1 crosswalk; Connecticut is many-to-many and
+  // would need areal weights we do not have. So rather than invent numbers, a
+  // county simply fades out in years where it has no result.
+  function hasData(d, year) {
+    return Number.isFinite(d.pct[year]) && Number.isFinite(d.totalVotes[year]);
   }
 
   function getColorScale() {
@@ -214,8 +228,10 @@ function scrollerElections(electionData, mapData, regionsData) {
 
     // Starting from the current displayed values (not from fromYear's data)
     // makes rapid year flipping re-entrant rather than jumpy.
-    const from = groupedData.map((d) => [d.pctNow, d.totalVotesNow]);
-    const to = groupedData.map((d) => [d.pct[toYear], d.totalVotes[toYear]]);
+    const from = groupedData.map((d) => [d.pctNow, d.totalVotesNow, d.opacityNow]);
+    const to = groupedData.map((d) =>
+      hasData(d, toYear) ? [d.pct[toYear], d.totalVotes[toYear], 1] : [null, null, 0]
+    );
 
     if (yearTimer) yearTimer.stop();
 
@@ -233,8 +249,24 @@ function scrollerElections(electionData, mapData, regionsData) {
 
       for (let i = 0; i < groupedData.length; i++) {
         const d = groupedData[i];
-        d.pctNow = from[i][0] + (to[i][0] - from[i][0]) * t;
-        d.totalVotesNow = from[i][1] + (to[i][1] - from[i][1]) * t;
+        const f = from[i];
+        const g = to[i];
+
+        d.opacityNow = f[2] + (g[2] - f[2]) * t;
+
+        if (g[0] === null) {
+          // Absent in the target year: hold the last known values and fade out.
+          continue;
+        }
+        if (f[2] === 0) {
+          // Absent before, present now: no meaningful value to travel from, so
+          // snap to the target and let the fade-in carry the change.
+          d.pctNow = g[0];
+          d.totalVotesNow = g[1];
+          continue;
+        }
+        d.pctNow = f[0] + (g[0] - f[0]) * t;
+        d.totalVotesNow = f[1] + (g[1] - f[1]) * t;
       }
 
       settle();
@@ -330,15 +362,16 @@ function scrollerElections(electionData, mapData, regionsData) {
   function drawNodes() {
     contextFg.save();
     for (const n of groupedData) {
+      if (n.opacityNow <= 0.01) continue; // absent in this year
       let nr = useSize ? size(n.totalVotesNow) : defaultR;
 
       contextFg.fillStyle = color(n.pctNow);
       contextFg.beginPath();
       contextFg.arc(n.x, n.y, nr, 0, 2 * Math.PI);
       if (selected && selected.state !== n.state) {
-        contextFg.globalAlpha = 0.3;
+        contextFg.globalAlpha = 0.3 * n.opacityNow;
       } else {
-        contextFg.globalAlpha = 1;
+        contextFg.globalAlpha = n.opacityNow;
       }
       contextFg.strokeStyle = "none";
       contextFg.fill();
@@ -352,7 +385,9 @@ function scrollerElections(electionData, mapData, regionsData) {
     contextFg.save();
     // Draw Labels
     for (const n of groupedData) {
+      if (n.opacityNow <= 0.01) continue;
       let nr = useSize ? size(n.totalVotesNow) : defaultR;
+      contextFg.globalAlpha = n.opacityNow;
       if ((!circlesDancing && nr > 9) || n === selected) {
         contextFg.fillStyle = n.pctNow < 0 ? "#814" : "#024D59";
         // contextFg.fillStyle = "#722";
@@ -450,7 +485,28 @@ function scrollerElections(electionData, mapData, regionsData) {
     d3.select("#barChart").datum(selectedForBarchart).call(bar);
   } // onHighlight
 
+  // The canvases are sized in device pixels at creation time and the map
+  // projection is fitted to the then-current width/height, so neither survives
+  // a window resize (or a phone rotation) on its own. Rebuild both.
+  function onResize() {
+    if (!container || !groupedData) return;
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      adjustWidth();
+      setupGeo(); // projection is fitExtent'd to width/height
+      contextBg = createCanvasContext("bg", container);
+      contextFg = createCanvasContext("fg", container);
+      pathCanvas.context(contextBg);
+      updateDomains();
+      setCentroids(); // centroids come from the new projection
+      resetForces();
+      simulation.alpha(0.3).restart();
+      redrawMap();
+    }, 150);
+  }
+
   function chart(selection) {
+    container = selection;
     d3.selectAll(".yearValue").text(YEAR);
 
     setYearOdometer = createYearOdometer(
@@ -461,6 +517,9 @@ function scrollerElections(electionData, mapData, regionsData) {
     document
       .getElementById("yearSelect")
       .addEventListener("change", onChangeYear);
+
+    window.addEventListener("resize", onResize);
+    window.addEventListener("orientationchange", onResize);
 
     adjustWidth();
     init();
@@ -730,8 +789,12 @@ function scrollerElections(electionData, mapData, regionsData) {
     // Seed the displayed values. Every read site below uses these, so
     // they must exist before the first updateDomains()/resetForces().
     groupedData.forEach((d) => {
-      d.pctNow = d.pct[YEAR];
-      d.totalVotesNow = d.totalVotes[YEAR];
+      const present = hasData(d, YEAR);
+      // Keep the displayed values finite even when absent: NaN force targets
+      // silently disable the force for that node, stranding it off-screen.
+      d.pctNow = present ? d.pct[YEAR] : 0;
+      d.totalVotesNow = present ? d.totalVotes[YEAR] : 0;
+      d.opacityNow = present ? 1 : 0;
     });
 
     console.log("groupedData", groupedData);

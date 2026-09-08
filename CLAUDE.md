@@ -26,24 +26,30 @@ data/US_Regions.csv                                      (state -> census divisi
 `js/variables.js` holds the shared globals (`YEAR`, `LEFT`, `RIGHT`). They are `let`/`const`
 at script scope, so they are **not** on `window` - don't look for `window.YEAR`.
 
-## No build step - edit index.html AND index.jade
+## index.html is GENERATED - never edit it
 
-`index.html` is what the server actually serves. `index.jade` is its Pug source. **Pug is not
-installed and there is no build script**, so the two files drift silently. Any markup change
-must be applied to both by hand, keeping them structurally identical.
+`index.jade` is the source; `index.html` is built from it by `npm run build`
+(`scripts/build.mjs`). **Edits to `index.html` are overwritten.**
 
-(A prior drift is what caused a real bug: in the Pug, `body` and `.container` sat at the same
-indentation, so `<body></body>` rendered empty and the whole page lived outside it. That broke
-`position: sticky`. Fixed - keep `.container` indented under `body`.)
+This used to be hand-synced, and the drift caused a real bug: in the Pug, `head`/`body` sat at
+the same indentation as `html`, and `.container` at the same indentation as `body`, so both
+`<html>` and `<body>` rendered empty and the page lived outside them. That broke
+`position: sticky`, which is why the year picker went offscreen on mobile.
 
-## Running locally
+## Commands
 
 ```sh
-python3 -m http.server 8899      # then open http://localhost:8899/index.html
+npm install
+npm run dev      # build + watch index.jade + serve on :8899 (no-store headers)
+npm run build    # index.jade -> index.html
+npm run lint     # eslint 9, flat config in eslint.config.mjs
+npm run format   # prettier
+npm run check    # lint + build, the pre-commit gate
 ```
 
-The scripts are aggressively cached by Chrome. After editing any `js/*.js`, load
-`index.html?v=N` with a fresh `N` - a plain reload will silently run the old file.
+`npm run dev` sends `Cache-Control: no-store` on everything. This matters: Chrome caches
+`js/*.js` hard enough that a plain reload silently runs the *previous* version. If you serve
+the directory some other way, cache-bust with `index.html?v=N`.
 
 ## Verifying in the browser
 
@@ -85,8 +91,21 @@ time, each frame calls `resetForces(false)` to retarget without kicking alpha.
 - Counties are joined to geometry by `county_fips` -> TopoJSON id, and to census divisions by
   uppercased state name. Unmatched counties are skipped silently (the `console.error` calls for
   this are commented out in `init()`).
+- **31 FIPS codes are not present in all 7 years.** Categories, all confirmed in the CSV:
+  - *created*: Broomfield CO `8014` (2001) - genuinely absent in 2000
+  - *dissolved*: Bedford VA `51515` - reverted to a town in 2013, absorbed by Bedford County
+  - *renamed*: Shannon SD `46113` (2000-12) -> Oglala Lakota SD `46102` (2016-24), a clean 1:1
+  - *reorganized*: the 8 Connecticut counties `9001-9015` (2000-20) became **9** planning
+    regions `9110-9190` (2024). Many-to-many; a correct crosswalk needs areal weights we do
+    not have, so **do not fabricate one**.
+  - *reporting artifacts*: 7 DC wards `11002-11008` (2024 only), Kansas City MO `2938000`,
+    Alaska `DISTRICT 99`, and a literal `NA` FIPS for a Rhode Island federal precinct
+  The code does not crosswalk any of these. `hasData(d, year)` decides presence, and absent
+  counties fade out via `opacityNow` rather than showing stale or invented numbers.
 - `data/2024_US_County_Level_Presidential_Results.csv` and
   `Departamentos_y_municipios_de_Colombia.csv` are leftovers, not loaded by the page.
+- `js/stackedBarChartFromMatrix.js` is dead code (not loaded, and references an undefined
+  `yValue`); it is excluded in `eslint.config.mjs`.
 
 ## Conventions
 

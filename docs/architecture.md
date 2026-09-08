@@ -33,8 +33,10 @@ Two stacked canvases inside the `position: fixed` `#vis`:
 - **`.fg`** - the ~3.1k county circles plus labels. Cleared and redrawn every simulation tick.
 
 Both are sized by `createCanvasContext()` at `devicePixelRatio` and scaled, which is why text
-stays crisp. **There is no resize handler that re-creates them**: resizing the window after load
-leaves the canvas at its original pixel size. Reload after resizing.
+stays crisp. `onResize()` (debounced 150ms, also bound to `orientationchange`) rebuilds them and
+**re-runs `setupGeo()`**, because the projection is `fitExtent`-ed to the old width/height and
+would otherwise keep the pre-resize scale; `setCentroids()` then has to run again too, since
+centroids come out of that projection.
 
 ## The force simulation
 
@@ -85,10 +87,24 @@ It used to be a Bootstrap `.sticky-top` in normal flow, which failed on mobile f
 compounding reasons: the malformed document skeleton (see CLAUDE.md), and `#vis` being a
 full-viewport `position: fixed` layer it had to out-stack.
 
+## Counties that do not exist in every year
+
+31 FIPS codes are missing from at least one election (see CLAUDE.md for the full breakdown -
+Connecticut's 2022 county-to-planning-region reorganization is the big one). `hasData(d, year)`
+is the single definition of presence, and each node carries an `opacityNow` that the year tween
+drives to 0 or 1, so a county fades out in years it does not exist rather than showing stale
+numbers.
+
+Two details that matter:
+
+- Displayed values are kept **finite even when absent** (0 rather than NaN). A NaN force target
+  makes d3-force silently set that node's strength to 0, stranding it wherever it happened to be.
+- A county *appearing* snaps its values and fades in, rather than interpolating - there is no
+  meaningful previous value to travel from. A county *disappearing* holds its last values while
+  fading out.
+
 ## Known rough edges
 
-- `index.jade` and `index.html` must be hand-synced; no build step.
-- No resize handler for the canvases (see above).
 - `chart.nodes()` and `window.scrollViz` exist only as browser-verification handles.
 - Two copies of Bootstrap (`lib/css/` is the linked one; `css/` is unused).
 - `update.sh` hardcodes a `.pem` path outside the repo, so it only works on the author's machine.
