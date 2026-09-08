@@ -191,10 +191,13 @@ function scrollerElections(electionData, mapData, regionsData) {
 
     // init();
     // simulation.stop();
-    simulation.nodes(groupedData).restart();
+    simulation.nodes(groupedData);
     resetForces();
+    // simulation.tick(50);
     // console.log("🏋🏼‍♀️ Simulation speedup", YEAR, simulation.alpha());
-    // for (let i = 0; i < 100; i++) simulation.tick();
+    // for (let i = 0; i < 200; i++) simulation.tick();
+    console.log("🏋🏼‍♀️✅ Simulation speedup done", simulation.velocityDecay());
+    simulation.alphaDecay(0.02).velocityDecay(0.6).restart();
 
     if (!circlesDancing) redrawMap();
   }
@@ -377,7 +380,7 @@ function scrollerElections(electionData, mapData, regionsData) {
       ["other result"]: selected["other result"][YEAR],
       [`${RIGHT}_vot_result`]: selected[`${RIGHT}_vot_result`][YEAR],
     };
-    console.log("barchart", selectedForBarchart);
+    // console.log("barchart", selectedForBarchart);
     d3.select("#barChart").datum(selectedForBarchart).call(bar);
   } // onHighlight
 

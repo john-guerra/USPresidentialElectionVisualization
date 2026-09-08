@@ -208,6 +208,11 @@ var scrollVis = function () {
 
   function setXPct() {
     scrollViz.xToCenter(false);
+    scrollViz.yToCenter(true);
+  }
+
+  function compareYear() {
+    scrollViz.xToCenter(false);
   }
 
   function setYRegions() {
