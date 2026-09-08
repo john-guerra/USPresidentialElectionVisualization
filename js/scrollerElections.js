@@ -62,7 +62,13 @@ function scrollerElections(electionData, mapData, regionsData) {
     yearTimer = null,
     setYearOdometer = null,
     container = null,
-    resizeTimer = null;
+    resizeTimer = null,
+    lastWidth = 0,
+    lastHeight = 0,
+    isTouchDevice =
+      typeof window !== "undefined" &&
+      window.matchMedia &&
+      window.matchMedia("(hover: none) and (pointer: coarse)").matches;
   // stillWantTitle = false;
 
   // path2D = new Path2D();
@@ -491,6 +497,24 @@ function scrollerElections(electionData, mapData, regionsData) {
   // a window resize (or a phone rotation) on its own. Rebuild both.
   function onResize() {
     if (!container || !groupedData) return;
+
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+
+    // Mobile browsers fire resize when the URL bar retracts or reappears
+    // during scroll, changing ONLY the height by ~50-120px. Rebuilding for
+    // that re-runs setupGeo(), and since the projection is fitExtent'd to
+    // width AND height, every centroid shifts (measured: ~64px median for a
+    // 53px height change) - the map visibly jumps while the reader scrolls.
+    //
+    // On a touch device the only geometry change that matters is rotation,
+    // and rotation always changes the width. So ignore height-only changes
+    // there. On desktop a height drag is deliberate, so honour it.
+    const heightOnly = w === lastWidth && h !== lastHeight;
+    lastWidth = w;
+    lastHeight = h;
+    if (heightOnly && isTouchDevice) return;
+
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
       adjustWidth();
@@ -519,6 +543,8 @@ function scrollerElections(electionData, mapData, regionsData) {
       .getElementById("yearSelect")
       .addEventListener("change", onChangeYear);
 
+    lastWidth = window.innerWidth;
+    lastHeight = window.innerHeight;
     window.addEventListener("resize", onResize);
     window.addEventListener("orientationchange", onResize);
 

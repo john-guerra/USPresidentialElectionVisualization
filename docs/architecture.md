@@ -87,6 +87,22 @@ It used to be a Bootstrap `.sticky-top` in normal flow, which failed on mobile f
 compounding reasons: the malformed document skeleton (see CLAUDE.md), and `#vis` being a
 full-viewport `position: fixed` layer it had to out-stack.
 
+## The mobile viewport
+
+Two things conspire here, and both have bitten this file:
+
+- `#vis` is `position: fixed`, so a percentage height resolves against the **initial containing
+  block** - which on mobile is the *large* viewport, with the URL bar retracted. `height: 100%`
+  therefore makes the canvas taller than the screen actually shows. `css/scroller.css` uses
+  `calc(100svh - 70px)` (small viewport height, with a `%` fallback): it always fits, and unlike
+  `dvh` it does not change as the bar moves.
+- Mobile browsers fire `resize` when that URL bar hides or reappears **during scroll**, changing
+  only the height by ~50-120px. Rebuilding on that re-runs `setupGeo()`, and since the projection
+  is `fitExtent`-ed to width *and* height, every centroid shifts - measured at ~64px median for a
+  53px height change, which reads as the map jumping while you scroll. `onResize()` therefore
+  ignores height-only changes on touch devices (`(hover: none) and (pointer: coarse)`), where the
+  only geometry change that matters is rotation, and rotation always changes the width.
+
 ## Counties that do not exist in every year
 
 31 FIPS codes are missing from at least one election (see CLAUDE.md for the full breakdown -

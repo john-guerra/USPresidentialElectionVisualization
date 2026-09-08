@@ -77,7 +77,13 @@
   margin-left: 0;
   /*width: 550px;*/
   /*background: cyan;*/
-  height: calc(100% - 70px);
+  /* For a position:fixed element, 100% resolves against the initial
+     containing block, which on mobile is the LARGE viewport (URL bar
+     retracted). That makes the canvas taller than the screen actually shows,
+     and it changes height as the bar hides and reappears while scrolling.
+     svh is the SMALL viewport: it always fits, and it never changes. */
+  height: calc(100% - 70px); /* fallback for browsers without svh */
+  height: calc(100svh - 70px);
   /* height: 600px; */
   width: 100%;
   /* background-color: #ddd; */
