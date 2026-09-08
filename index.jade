@@ -9,6 +9,29 @@ html(lang="en")
     meta(name="apple-mobile-web-app-capable" content="yes")
     meta(name="apple-mobile-web-app-status-bar-style" content="black-translucent")
 
+    //- Social / SEO. Without these the page unfurls as a bare URL with no
+    //- title card anywhere it gets shared.
+    meta(name="description" content="How did Americans really vote? A scrollytelling look at US presidential results by county, 2000-2024, showing why maps of land mislead us about votes.")
+    meta(name="author" content="John Alexis Guerra Gomez")
+    meta(name="keywords" content="US elections, data visualization, county results, d3, scrollytelling, presidential election, cartogram")
+    link(rel="canonical" href="https://johnguerra.co/viz/USElectionsResults/")
+
+    meta(property="og:type" content="article")
+    meta(property="og:site_name" content="johnguerra.co")
+    meta(property="og:url" content="https://johnguerra.co/viz/USElectionsResults/")
+    meta(property="og:title" content="US Presidential Election Results, 2000-2024")
+    meta(property="og:description" content="Land does not vote, people do. A scrollytelling look at US presidential results by county, from a map to a beeswarm of 3,100 counties sized by voters.")
+    meta(property="og:image" content="https://johnguerra.co/viz/USElectionsResults/img/og.png")
+    meta(property="og:image:width" content="1200")
+    meta(property="og:image:height" content="630")
+    meta(property="og:image:alt" content="Thousands of circles, one per US county, coloured red and blue and spread left to right by which way the county voted.")
+
+    meta(name="twitter:card" content="summary_large_image")
+    meta(name="twitter:creator" content="@duto_guerra")
+    meta(name="twitter:title" content="US Presidential Election Results, 2000-2024")
+    meta(name="twitter:description" content="Land does not vote, people do. A scrollytelling look at US presidential results by county.")
+    meta(name="twitter:image" content="https://johnguerra.co/viz/USElectionsResults/img/og.png")
+
     link(rel="preconnect", href="https://fonts.googleapis.com")
     link(rel="preconnect", href="https://fonts.gstatic.com",crossorigin)
     link(href="https://fonts.googleapis.com/css2?family=Fjalla+One&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=PT+Sans+Narrow:wght@400;700&display=swap",rel="stylesheet")
@@ -47,6 +70,9 @@ html(lang="en")
           option(value="2004") 2004
           option(value="2000") 2000
 
+      //- Progress rail: 24 dots, one per story step, click to jump.
+      nav#progress(aria-label="Story progress")
+
       #graphic.row
         #vis
           div(style="display:none;")
@@ -61,103 +87,105 @@ html(lang="en")
 
         div.col-md-8#visFiller
         #sections.col-xs-12.col-md-4
-          section.step
+          section.step(data-step-id="americans-vote-presidential")
             h2.title How did Americans vote in the #[span.yearValue] Presidential Election?
             p This is an analysis of the voting in the counties of the United States in the presidential #[span.yearValue] election.
-            strong Scroll down to continue.
+            strong#scrollHint.scroll-hint
+              | Scroll down to continue.
+              span.scroll-hint-arrow(aria-hidden="true") ↓
 
-          section.step
+          section.step(data-step-id="visualize-results")
             h2.title Let's visualize the results!
             p But how? Maybe with a map of the United States...
 
-          section.step
+          section.step(data-step-id="add-colors")
             h2.title Let's add colors
             p We can use colors to differentiate who won in each state. If a state voted mostly for #[span.colorDemocrat Democrats] it will be #[span.colorDemocrat blue], if it voted mostly for #[span.colorRepublican Republicans] it will be #[span.colorRepublican red].
 
-          section.step
+          section.step(data-step-id="really-red")
             h2.title So is the US really that red?
             p One of the problems with this graphic is that it does not show the individual results of the counties.
 
-          section.step
+          section.step(data-step-id="results-county")
             h2.title Results by county
             p By counties the result is different, but also misleading, but it is still far from accurate as it doesn't represent the actual percentage of votes...
 
-          section.step
+          section.step(data-step-id="use-color-saturation")
             h2.title Let's use color saturation
             p Let's add a scale where darker colors represent higher differences, and lighter colors represent smaller differences. However, this is still misleading...
 
 
-          section.step
+          section.step(data-step-id="geographic-area-misleading")
             h2.title Geographic area is misleading
             p For example, even though #[span#exampleLeft] and #[span#exampleRight] have similar opposing results percent wise, they are very different in terms of population (#[span#exampleLeftPopulation] vs #[span#exampleRightPopulation]).
 
 
-          section.step
+          section.step(data-step-id="number-voters")
             h2.title What about the number of voters?
             p Another problem with this map is that it shows the results by geographic area, and for example, rural counties have a lot of area but a small population.
 
-          section.step
+          section.step(data-step-id="circle-each-county")
             h2.title A circle for each county
             p Let's replace each county with a circle of the same size to make a more accurate visual comparison.
 
-          section.step
+          section.step(data-step-id="dont-fit")
             h2.title They don't fit!
             p Another problem, the circles appear on top of each other 🤦🏻‍♂️...
 
-          section.step
+          section.step(data-step-id="respect-my-bubble")
             h2.title Respect my bubble!
             p Let's add a repulsion force that makes each circle try to avoid being on top of another.
 
-          section.step
+          section.step(data-step-id="number-voters-2")
             h2.title But what about the number of voters?
             p We still have the problem that all circles are the same size ☹️. How about we use the size of the circle...
 
-          section.step
+          section.step(data-step-id="size-matters-case")
             h2.title Size matters (in this case)
             p How about we use the #[strong area] (not the radius) of the circles to represent the total number of voters.
 
-          section.step
+          section.step(data-step-id="details")
             h2.title Details
             p If you want to know the values of each county, move the mouse over the center of the circle.
 
-          section.step
+          section.step(data-step-id="compare-better")
             h2.title Now we can compare better
             p With this map it is a bit easier to see how the country voted.
 
-          section.step
+          section.step(data-step-id="patterns-regions")
             h2.title Patterns by regions
             p For example, it can be seen how larger counties and near the coast tend to vote more for #[span.colorDemocrat Democrats], while interior counties for #[span.colorRepublican Republicans].
 
-          section.step
+          section.step(data-step-id="overall-result")
             h2.title What about the overall result?
             p With the map it is not so easy to know. (In reality, maps are not the best way to visualize data for most analysis tasks 😉).
 
-          section.step
+          section.step(data-step-id="remove-map")
             h2.title Let's remove the map then...
             p Now we have more space to use. But the counties are still located by geographic position, which is no longer necessary.
 
-          section.step
+          section.step(data-step-id="everyone-middle")
             h2.title Everyone to the middle
             p Removing the geographic position allows us to use the location to encode more information. For example, we can place counties horizontally depending on who the voted more towards...
 
-          section.step
+          section.step(data-step-id="left-right")
             h2.title From left to right
             p To differentiate the counties more easily, we can distribute them horizontally by how they voted. We send to the #[span.colorDemocrat left] those who voted more for #[span.colorDemocrat Democrats] and to the #[span.colorRepublican right] those who voted more for #[span.colorRepublican Republicans].
 
-          section.step
+          section.step(data-step-id="vertical-location")
             h2.title What about the vertical location?
             p We can use it to divide by regions.
 
-          section.step
+          section.step(data-step-id="voting-regions")
             h2.title Voting by Regions
             p This graphic shows us how each region of the United States voted. Here we can observe, for example, how the New England region tends to vote more for #[span.colorDemocrat Democrats], versus East South Central which voted more for #[span.colorRepublican Republicans]. This allows for easier comparison and understanding of the final election results.
 
-          section.step
+          section.step(data-step-id="voting-population")
             h2.title Voting by population
             p We can also change the vertical position to encode the number of voters by population.
 
           #extra-space
-          section.step.last
+          section.step.last(data-step-id="thank-you")
             h2.title Thank you!
             p Thanks for making it this far, I hope you liked it. If you have any questions or suggestion feel free to reach out via social media, just search for #[a(href="http://johnguerra.co") John Alexis Guerra Gómez].
             br
@@ -189,6 +217,7 @@ html(lang="en")
 
     script(src="js/variables.js")
     script(src="js/yearOdometer.js")
+    script(src="js/shareHash.js")
     script(src="js/scrollerElections.js")
     script(src="js/scroller.js")
     script(src="js/sections.js")

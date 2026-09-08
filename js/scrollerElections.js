@@ -1,4 +1,4 @@
-/* global d3, topojson, stackedBar, LEFT, RIGHT, forceBoundary, createYearOdometer, YEAR:writable */
+/* global d3, topojson, stackedBar, LEFT, RIGHT, forceBoundary, createYearOdometer, updateShareYear, YEAR:writable */
 
 // https://www.freecodecamp.org/news/three-ways-to-title-case-a-sentence-in-javascript-676a9175eb27/
 function titleCase(str) {
@@ -290,6 +290,7 @@ function scrollerElections(electionData, mapData, regionsData) {
 
     d3.selectAll(".yearValue").text(YEAR);
     if (setYearOdometer) setYearOdometer(YEAR);
+    updateShareYear(YEAR); // keep the shareable link in sync
 
     adjustWidth();
     // Discrete, per-year readouts snap; only the circles interpolate.

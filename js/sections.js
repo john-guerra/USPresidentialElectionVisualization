@@ -1,4 +1,4 @@
-/* global d3, scrollerElections, scroller */
+/* global d3, scrollerElections, scroller, parseShareHash, writeShareHash, YEAR:writable */
 /**
  * scrollVis - encapsulates
  * all the code for the visualization
@@ -18,6 +18,9 @@ var scrollVis = function () {
   // quickly, we want to call all the
   // activate functions that they pass.
   var lastIndex = -1;
+  var reduceMotion =
+    window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var activeIndex = 0;
 
   // main canvas, context used for visualization
@@ -147,7 +150,9 @@ var scrollVis = function () {
    *
    */
   function showTitle() {
-    scrollViz.circlesDancing(true);
+    // The opening is a full-canvas dance of ~3.1k circles. Readers who asked
+    // the OS for less motion go straight to the settled layout instead.
+    scrollViz.circlesDancing(!reduceMotion);
     scrollViz.drawTitle();
   }
 
@@ -288,32 +293,138 @@ var scrollVis = function () {
  */
 var display = function (mData) {
   console.log("Data loaded");
-  // create a new plot and
-  // display it
+
+  var reduceMotion =
+    window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var stepNodes = Array.prototype.slice.call(
+    document.querySelectorAll(".step")
+  );
+
+  // Restore a shared link BEFORE the chart initialises: the year has to be set
+  // while init() is still reading it, or the whole layout is built for 2024
+  // and then has to be torn down.
+  var shared = parseShareHash();
+  if (shared.year) {
+    var sel = document.getElementById("yearSelect");
+    if (sel && sel.querySelector('option[value="' + shared.year + '"]')) {
+      sel.value = shared.year;
+      YEAR = shared.year;
+    }
+  }
+
   var plot = scrollVis();
   d3.select("#vis").datum(mData).call(plot);
 
-  // setup scroll functionality
   var scroll = scroller().container(d3.select("#graphic"));
-
-  // pass in .step selection as the steps
   scroll(d3.selectAll(".step"));
 
-  // setup event handling
-  scroll.on("active", function (index) {
-    // highlight current step text
-    d3.selectAll(".step").style("opacity", function (d, i) {
-      return i == index ? 1 : 0.1;
+  // ---- Progress rail ------------------------------------------------------
+  // The reader otherwise has no idea the story is 24 steps long, and no way
+  // to jump back to a step they want to re-read.
+  var rail = d3.select("#progress");
+  var dots = rail
+    .selectAll("button")
+    .data(stepNodes)
+    .enter()
+    .append("button")
+    .attr("class", "progress-dot")
+    .attr("type", "button")
+    .attr("title", function (d) {
+      var t = d.querySelector(".title");
+      return t ? t.textContent.trim() : "";
+    })
+    .attr("aria-label", function (d) {
+      var t = d.querySelector(".title");
+      return "Jump to: " + (t ? t.textContent.trim() : "");
+    })
+    .on("click", function (event, d) {
+      d.scrollIntoView({
+        behavior: reduceMotion ? "auto" : "smooth",
+        block: "center",
+      });
     });
 
-    // activate current section
+  // ---- Continuous card fade ----------------------------------------------
+  // Replaces a hard 1 -> 0.1 opacity step, which read as a flicker rather
+  // than a hand-off from one card to the next.
+  var activeIndex = 0;
+  var rafPending = false;
+
+  function focusLine() {
+    // On phones the graphic is pinned to the top of the viewport, so the
+    // card in focus sits lower down than it does on a wide screen.
+    return window.innerHeight * (window.innerWidth < 768 ? 0.72 : 0.5);
+  }
+
+  function paint() {
+    rafPending = false;
+    var focusY = focusLine();
+    for (var i = 0; i < stepNodes.length; i++) {
+      var r = stepNodes[i].getBoundingClientRect();
+      var dist = Math.abs(r.top + r.height / 2 - focusY) / window.innerHeight;
+      var o = Math.max(0.12, Math.min(1, 1.15 - dist * 1.4));
+      stepNodes[i].style.opacity = o;
+    }
+    dots
+      .classed("active", function (d, i) {
+        return i === activeIndex;
+      })
+      .classed("done", function (d, i) {
+        return i < activeIndex;
+      });
+  }
+
+  function schedulePaint() {
+    if (rafPending) return;
+    rafPending = true;
+    window.requestAnimationFrame(paint);
+  }
+
+  window.addEventListener("scroll", schedulePaint, { passive: true });
+  window.addEventListener("resize", schedulePaint);
+
+  // ---- Scroll hint --------------------------------------------------------
+  var hint = document.getElementById("scrollHint");
+  function dismissHint() {
+    if (hint) hint.classList.add("gone");
+    window.removeEventListener("scroll", dismissHint);
+  }
+  window.addEventListener("scroll", dismissHint, { passive: true, once: true });
+
+  scroll.on("active", function (index) {
+    activeIndex = index;
     plot.activate(index);
-    console.log("Activate " + index);
+    schedulePaint();
+
+    var el = stepNodes[index];
+    writeShareHash({
+      stepId: el && el.dataset ? el.dataset.stepId : null,
+      year: YEAR,
+    });
   });
 
   scroll.on("progress", function (index, progress) {
     plot.update(index, progress);
   });
+
+  // Jump to the shared step once the scroller knows where the sections are.
+  if (shared.stepId) {
+    var target = stepNodes.filter(function (el) {
+      return el.dataset && el.dataset.stepId === shared.stepId;
+    })[0];
+    if (target) {
+      // "instant", NOT "auto": Bootstrap's Reboot sets
+      // :root { scroll-behavior: smooth }, and per spec "auto" means "use the
+      // CSS value", so "auto" would smooth-scroll from the top - replaying
+      // every intermediate step's activate function on the way down and
+      // overwriting the very hash we are restoring. "instant" overrides it.
+      target.scrollIntoView({ behavior: "instant", block: "center" });
+    }
+  }
+
+  paint();
 };
 
 // 2024 data from https://github.com/tonmcg/US_County_Level_Election_Results_08-24

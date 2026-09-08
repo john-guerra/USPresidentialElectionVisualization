@@ -269,3 +269,115 @@ a {
   font-size: 0.85em;
   overflow-wrap: anywhere;
 }
+
+/* =================================================================
+   Progress rail
+   -----------------------------------------------------------------
+   One dot per story step, so the reader can see how long the piece
+   is and jump back to a card. Fixed on the right EDGE and vertically
+   centred, which keeps it clear of #yearPicker in the top corner.
+   ================================================================= */
+
+#progress {
+  position: fixed;
+  right: max(6px, env(safe-area-inset-right, 0px));
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 100; /* above #sections (90), below #yearPicker (1080) */
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 4px;
+}
+
+#progress .progress-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 1px solid rgba(226, 212, 230, 0.45);
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background-color 0.25s ease,
+    transform 0.2s ease,
+    border-color 0.25s ease;
+}
+
+#progress .progress-dot:hover {
+  transform: scale(1.5);
+  border-color: #e2d4e6;
+}
+
+#progress .progress-dot.done {
+  background: rgba(226, 212, 230, 0.5);
+}
+
+#progress .progress-dot.active {
+  background: #e2d4e6;
+  border-color: #e2d4e6;
+  transform: scale(1.6);
+}
+
+#progress .progress-dot:focus-visible {
+  outline: 2px solid #bfd9ff;
+  outline-offset: 2px;
+}
+
+/* The rail is a convenience, not the only way through the story, and on a
+   narrow screen it competes with the cards for space. */
+@media (max-width: 575px) {
+  #progress {
+    display: none;
+  }
+}
+
+/* -------- Scroll hint ---------------------------------------------------
+   A fixed full-viewport canvas gives a first-time reader no affordance that
+   the page scrolls at all. Removed for good on the first scroll.
+   ----------------------------------------------------------------------- */
+
+.scroll-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  transition: opacity 0.4s ease;
+}
+
+.scroll-hint.gone {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.scroll-hint-arrow {
+  display: inline-block;
+  animation: scroll-hint-bob 1.6s ease-in-out infinite;
+}
+
+@keyframes scroll-hint-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(4px);
+  }
+}
+
+/* The step cards are faded continuously from JS; give the property a
+   transition so a jump (dot click, deep link) still eases. */
+.step {
+  transition: opacity 0.25s linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-hint-arrow {
+    animation: none;
+  }
+  #progress .progress-dot {
+    transition: none;
+  }
+  .step {
+    transition: none;
+  }
+}

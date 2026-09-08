@@ -71,6 +71,31 @@ Use **Claude in Chrome** (`mcp__claude-in-chrome__*`), invoking the `claude-in-c
 - Don't screenshot-verify routine changes; measure instead (`getBoundingClientRect`,
   `scrollWidth`) and screenshot only when appearance is the thing in question.
 
+## Deep links
+
+`#<step-slug>&y=<year>` restores both the story step and the election year
+(`js/shareHash.js`). Step ids are `data-step-id` slugs on each `section.step` in `index.jade`,
+**not indices** - inserting a step mid-story must not invalidate shared links.
+
+Two traps, both already hit once:
+
+- Always `history.replaceState`, never `location.hash = ...`. Assigning the hash makes the
+  browser jump to a matching element id, fires `hashchange`, and pushes one history entry per
+  step, so Back walks the reader up the article one card at a time.
+- The restore jump must use `scrollIntoView({ behavior: "instant" })`. Bootstrap's Reboot sets
+  `:root { scroll-behavior: smooth }`, and per spec `"auto"` means *use the CSS value* - so
+  `"auto"` smooth-scrolls from the top, replays every intermediate step's activate function,
+  and overwrites the hash being restored. Only `"instant"` overrides it.
+
+Changing the hash by hand does not re-run anything; the restore happens on load only.
+
+## Social preview
+
+`index.jade`'s head carries the OG/Twitter block. `img/og.png` (1200x630) is a screenshot of the
+live beeswarm; regenerate it by loading `#left-right&y=2024`, hiding `#progress`, `#sections`
+and the GitHub star span, and capturing the swarm. The URLs in the meta tags are absolute and
+point at production, so they only resolve once deployed.
+
 ## Year transitions
 
 Every node stores `pct` and `totalVotes` as **year-keyed objects**. Everything that draws or
