@@ -52,6 +52,9 @@ var scrollVis = function () {
   var chart = function (selection) {
     selection.each(function (data) {
       scrollViz = scrollerElections(data[0], data[1], data[2]);
+      // Exposed only as a handle for browser-based verification;
+      // see CLAUDE.md > Verifying in the browser.
+      window.scrollViz = scrollViz;
 
       selection.call(scrollViz);
 

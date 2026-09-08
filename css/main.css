@@ -132,3 +132,140 @@ svg {
 a {
   color: rgb(191 217 255);
 }
+/* =================================================================
+   Year picker
+   -----------------------------------------------------------------
+   Previously a Bootstrap .sticky-top inside .container. That was
+   unreliable because the document skeleton was malformed (the page
+   rendered outside <body>), and because #vis is position:fixed and
+   covers the whole viewport on phones.
+
+   Now: a fixed pill, always top-right. The odometer is the visual;
+   the native <select> is stretched transparently over the whole pill
+   so taps still open the platform picker and screen readers still
+   see a real form control.
+   ================================================================= */
+
+#yearPicker {
+  position: fixed;
+  top: max(10px, env(safe-area-inset-top, 0px));
+  right: max(10px, env(safe-area-inset-right, 0px));
+  z-index: 1080; /* above #vis (z-index 1) and Bootstrap's fixed layers */
+  display: flex;
+  align-items: baseline;
+  gap: 0.4em;
+  padding: 0.3em 0.75em;
+  border-radius: 999px;
+  background: rgba(38, 36, 44, 0.82);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(226, 212, 230, 0.25);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+  color: #e2d4e6;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+#yearPicker:hover,
+#yearPicker:focus-within {
+  border-color: rgba(226, 212, 230, 0.6);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.5);
+}
+
+#yearPickerLabel {
+  font-family: "PT Sans Narrow", sans-serif;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #baaebd;
+}
+
+#yearPickerCaret {
+  width: 0.6em;
+  height: 0.4em;
+  align-self: center;
+  color: #baaebd;
+  flex: none;
+}
+
+/* The real control: invisible, but covers the pill so it stays tappable. */
+#yearPicker #yearSelect {
+  position: absolute;
+  /* -1px, not 0: an absolutely positioned child insets from the padding box,
+     which would leave the pill's 1px border ring untappable. */
+  inset: -1px;
+  /* No width/height: they would over-constrain the box and win over the
+     offsets, shrinking it back to the padding box. */
+  opacity: 0;
+  border: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Keyboard users get a visible ring, since the select itself is invisible. */
+#yearPicker #yearSelect:focus-visible {
+  outline: none;
+}
+#yearPicker:focus-within {
+  outline: 2px solid #bfd9ff;
+  outline-offset: 2px;
+}
+
+/* -------- Odometer -------------------------------------------------
+   One overflow-hidden window per digit, each containing a 0-9 strip
+   that slides. Rolling only the digits that actually changed is what
+   makes a year switch read as counting rather than as a text swap.
+   ------------------------------------------------------------------ */
+
+#yearOdometer {
+  display: flex;
+  font-family: "Fjalla One", sans-serif;
+  font-size: 1.25rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+#yearOdometer .odo-digit {
+  position: relative;
+  overflow: hidden;
+  height: 1em;
+  width: 0.58em;
+  text-align: center;
+}
+
+#yearOdometer .odo-strip {
+  display: block;
+  transition: transform 0.62s cubic-bezier(0.33, 1, 0.68, 1);
+  will-change: transform;
+}
+
+#yearOdometer .odo-strip span {
+  display: block;
+  height: 1em;
+  line-height: 1;
+}
+
+/* Keep the GitHub star button clear of the fixed pill. */
+.container > span.d-flex.flex-row-reverse {
+  padding-right: 8.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #yearOdometer .odo-strip {
+    transition: none;
+  }
+}
+
+/* Long unbreakable URLs in the credits (e.g. the tonmcg data link) were
+   forcing horizontal page scroll on phones. */
+#sections {
+  overflow-wrap: anywhere;
+}
+
+#sections blockquote {
+  font-size: 0.85em;
+  overflow-wrap: anywhere;
+}

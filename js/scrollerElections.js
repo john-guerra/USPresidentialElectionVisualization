@@ -1,4 +1,4 @@
-/* global d3, topojson, stackedBar, LEFT, RIGHT, YEAR, forceBoundary */
+/* global d3, topojson, stackedBar, LEFT, RIGHT, YEAR, forceBoundary, createYearOdometer */
 
 // https://www.freecodecamp.org/news/three-ways-to-title-case-a-sentence-in-javascript-676a9175eb27/
 function titleCase(str) {
@@ -55,7 +55,12 @@ function scrollerElections(electionData, mapData, regionsData) {
     titleImage = new Image(),
     fmtPct = d3.format(" >5.2%"),
     fmt = d3.format(" >5.2s"),
-    groupedData = null; // set in init
+    groupedData = null, // set in init
+    // Year transition state. pctNow / totalVotesNow (per node) are the
+    // *displayed* values; everything that draws or positions reads those
+    // rather than pct[YEAR], so a year change can be interpolated.
+    yearTimer = null,
+    setYearOdometer = null;
   // stillWantTitle = false;
 
   // path2D = new Path2D();
@@ -179,27 +184,88 @@ function scrollerElections(electionData, mapData, regionsData) {
   //   g.selectAll(".swatch").style("fill", color(0));
   // }
 
+  const YEARS = [2000, 2004, 2008, 2012, 2016, 2020, 2024];
+
+  // -------------------------------------------------------------------
+  // TODO(John): year-transition pacing. This is the call that decides how
+  // a year change *feels*, and it is deliberately left for you.
+  //
+  //   Slow + d3.easeCubicInOut (~1100ms): counties visibly migrate from one
+  //     election to the next. Elegant, but clicking through years feels laggy.
+  //   Fast + d3.easeQuadOut (~450ms): stays responsive when flipping quickly
+  //     from 2000 to 2024, but the migration reads as a jump cut.
+  //
+  // `distance` is how many elections apart the years are (1 for 2020 -> 2024,
+  // 6 for 2000 -> 2024), in case you want longer trips to take longer.
+  function yearTweenPacing(distance) {
+    // Placeholder so the page runs. Replace this body.
+    return { duration: 800, ease: d3.easeCubicInOut };
+  }
+  // -------------------------------------------------------------------
+
+  // Interpolate the *displayed* values from whatever is on screen now to the
+  // target year, letting the running simulation chase the moving targets.
+  // The old implementation stopped the simulation and restarted it at
+  // alpha 0.7, which read as a jolt; here alpha is only topped up.
+  function tweenYear(fromYear, toYear) {
+    const distance =
+      Math.abs(YEARS.indexOf(+toYear) - YEARS.indexOf(+fromYear)) || 1;
+    const { duration, ease } = yearTweenPacing(distance);
+
+    // Starting from the current displayed values (not from fromYear's data)
+    // makes rapid year flipping re-entrant rather than jumpy.
+    const from = groupedData.map((d) => [d.pctNow, d.totalVotesNow]);
+    const to = groupedData.map((d) => [d.pct[toYear], d.totalVotes[toYear]]);
+
+    if (yearTimer) yearTimer.stop();
+
+    const settle = () => {
+      // d3-force caches force targets at initialize() time, so retargeting
+      // means re-setting the forces. resetForces(false) does that without
+      // kicking alpha.
+      updateDomains();
+      resetForces(false);
+    };
+
+    yearTimer = d3.timer((elapsed) => {
+      const done = elapsed >= duration;
+      const t = ease(done ? 1 : elapsed / duration);
+
+      for (let i = 0; i < groupedData.length; i++) {
+        const d = groupedData[i];
+        d.pctNow = from[i][0] + (to[i][0] - from[i][0]) * t;
+        d.totalVotesNow = from[i][1] + (to[i][1] - from[i][1]) * t;
+      }
+
+      settle();
+      // Keep just enough energy for the nodes to follow the moving targets.
+      if (simulation.alpha() < 0.28) simulation.alpha(0.28);
+      simulation.restart();
+
+      if (done) {
+        yearTimer.stop();
+        yearTimer = null;
+      }
+    });
+  }
+
   function onChangeYear() {
-    this.removeEventListener("input", onChangeYear);
-    d3.selectAll(".yearValue").text(this.value);
-    simulation.stop();
-    YEAR = this.value;
+    const fromYear = YEAR;
+    const toYear = this.value;
+    if (toYear === fromYear) return;
+
+    YEAR = toYear;
+
+    d3.selectAll(".yearValue").text(YEAR);
+    if (setYearOdometer) setYearOdometer(YEAR);
 
     adjustWidth();
-    updateDomains();
+    // Discrete, per-year readouts snap; only the circles interpolate.
     showExampleValues();
-
-    // init();
-    // simulation.stop();
-    simulation.nodes(groupedData);
-    resetForces();
-    // simulation.tick(50);
-    // console.log("🏋🏼‍♀️ Simulation speedup", YEAR, simulation.alpha());
-    // for (let i = 0; i < 200; i++) simulation.tick();
-    console.log("🏋🏼‍♀️✅ Simulation speedup done", simulation.velocityDecay());
-    simulation.alphaDecay(0.02).velocityDecay(0.6).restart();
-
+    simulation.nodes(groupedData).alphaDecay(0.02);
     if (!circlesDancing) redrawMap();
+
+    tweenYear(fromYear, toYear);
   }
 
   function createCanvasContext(className, selection) {
@@ -264,9 +330,9 @@ function scrollerElections(electionData, mapData, regionsData) {
   function drawNodes() {
     contextFg.save();
     for (const n of groupedData) {
-      let nr = useSize ? size(n.totalVotes[YEAR]) : defaultR;
+      let nr = useSize ? size(n.totalVotesNow) : defaultR;
 
-      contextFg.fillStyle = color(n.pct[YEAR]);
+      contextFg.fillStyle = color(n.pctNow);
       contextFg.beginPath();
       contextFg.arc(n.x, n.y, nr, 0, 2 * Math.PI);
       if (selected && selected.state !== n.state) {
@@ -286,9 +352,9 @@ function scrollerElections(electionData, mapData, regionsData) {
     contextFg.save();
     // Draw Labels
     for (const n of groupedData) {
-      let nr = useSize ? size(n.totalVotes[YEAR]) : defaultR;
+      let nr = useSize ? size(n.totalVotesNow) : defaultR;
       if ((!circlesDancing && nr > 9) || n === selected) {
-        contextFg.fillStyle = n.pct[YEAR] < 0 ? "#814" : "#024D59";
+        contextFg.fillStyle = n.pctNow < 0 ? "#814" : "#024D59";
         // contextFg.fillStyle = "#722";
         contextFg.textAlign = "center";
         contextFg.fillText(n.county_name, n.x, n.y + 2);
@@ -323,7 +389,7 @@ function scrollerElections(electionData, mapData, regionsData) {
 
   function updateDomains() {
     size
-      .domain([0, d3.max(groupedData, (d) => d.totalVotes[YEAR])])
+      .domain([0, d3.max(groupedData, (d) => d.totalVotesNow)])
       .range([1, r]);
     x.range([0, width]);
     y.domain(regiones).range([height - 50, 50]);
@@ -386,6 +452,12 @@ function scrollerElections(electionData, mapData, regionsData) {
 
   function chart(selection) {
     d3.selectAll(".yearValue").text(YEAR);
+
+    setYearOdometer = createYearOdometer(
+      document.getElementById("yearOdometer")
+    );
+    setYearOdometer(YEAR);
+
     document
       .getElementById("yearSelect")
       .addEventListener("change", onChangeYear);
@@ -515,7 +587,7 @@ function scrollerElections(electionData, mapData, regionsData) {
   function resetForces(restart) {
     const forceX = d3
         .forceX((d) =>
-          xToCenter ? width / 2 : circlesByGeo ? d.centroid[0] : x(d.pct[YEAR])
+          xToCenter ? width / 2 : circlesByGeo ? d.centroid[0] : x(d.pctNow)
         )
         .strength(xToCenter ? 0.1 : (height / width) * forceToCentroid),
       forceY = d3
@@ -525,7 +597,7 @@ function scrollerElections(electionData, mapData, regionsData) {
             : circlesByGeo
               ? d.centroid[1]
               : yByPopulation
-                ? yPopulation(+d.totalVotes[YEAR])
+                ? yPopulation(+d.totalVotesNow)
                 : d.yRegion
         )
         .strength(yToCenter ? 0.07 : (width / height) * forceToCentroid);
@@ -551,7 +623,7 @@ function scrollerElections(electionData, mapData, regionsData) {
           ? d3
               .forceCollide(
                 (d) =>
-                  (useSize ? size(d.totalVotes[YEAR]) : defaultR) *
+                  (useSize ? size(d.totalVotesNow) : defaultR) *
                   collisionFactor
               )
               .iterations(4)
@@ -572,7 +644,13 @@ function scrollerElections(electionData, mapData, regionsData) {
 
     // Exampe Right
     let exampleRight;
-    for (let d of groupedData.sort((a, b) => a.pct[YEAR] - b.pct[YEAR])) {
+    // Sort a copy: groupedData is the simulation's own node array, and
+    // Array#sort mutates in place. (18 counties have no data in some years,
+    // e.g. Oglala Lakota SD, so the comparator can also see NaN.)
+    const byPct = groupedData
+      .filter((d) => Number.isFinite(d.pct[YEAR]))
+      .sort((a, b) => a.pct[YEAR] - b.pct[YEAR]);
+    for (let d of byPct) {
       exampleRight = d;
       if (d.pct[YEAR] > -1 * exampleLeft.pct[YEAR]) break;
     }
@@ -648,6 +726,14 @@ function scrollerElections(electionData, mapData, regionsData) {
         (d) => `${+d.county_fips}`
       )
       .map(([, d]) => d); // we only need the values
+
+    // Seed the displayed values. Every read site below uses these, so
+    // they must exist before the first updateDomains()/resetForces().
+    groupedData.forEach((d) => {
+      d.pctNow = d.pct[YEAR];
+      d.totalVotesNow = d.totalVotes[YEAR];
+    });
+
     console.log("groupedData", groupedData);
 
     totalsByState = Object.fromEntries(
@@ -678,6 +764,11 @@ function scrollerElections(electionData, mapData, regionsData) {
 
     showExampleValues();
   } // init
+
+  // Read-only handle on the node data, for browser-based verification.
+  chart.nodes = function () {
+    return groupedData;
+  };
 
   chart.showMap = function (_) {
     // stillWantTitle = false;

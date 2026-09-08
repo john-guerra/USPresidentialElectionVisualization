@@ -1,12 +1,11 @@
 <!DOCTYPE html>
-<html lang="en"></html>
+<html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <title>US Election Results 2000-2024</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin"/>
   <link href="https://fonts.googleapis.com/css2?family=Fjalla+One&amp;family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&amp;family=PT+Sans+Narrow:wght@400;700&amp;display=swap" rel="stylesheet"/>
@@ -14,28 +13,31 @@
   <link rel="stylesheet" href="./css/main.css"/>
   <link rel="stylesheet" type="text/css" href="css/scroller.css"/>
 </head>
-<body></body>
+<body>
 <div class="container"><span class="d-flex flex-row-reverse"><a class="github-button" href="https://github.com/john-guerra/USPresidentialElectionVisualization" data-color-scheme="no-preference: dark; light: light; dark: dark;" data-icon="octicon-star" data-size="large" aria-label="Star john-guerra/USPresidentialElectionVisualization on GitHub">Star</a></span>
   <div class="row">
     <div class="col-md-12 col-xs-12">
       <h1>US Presidential Election Results</h1>
     </div>
   </div>
-  <div class="sticky-top">
-    <div class="d-flex flex-row-reverse">
-      <div class="form-floating">
-        <select class="form-select" id="yearSelect" value="2020" aria-label="Year">
-          <option value="2024" selected="selected">2024</option>
-          <option value="2020">2020</option>
-          <option value="2016">2016</option>
-          <option value="2012">2012</option>
-          <option value="2008">2008</option>
-          <option value="2004">2004</option>
-          <option value="2000">2000</option>
-        </select>
-        <label class="form-label" for="yearSelect">Year:</label>
-      </div>
-    </div>
+  <!-- Year picker: a fixed pill that stays reachable on every viewport.
+       The odometer is the visual; the native select sits transparently on
+       top of it so phones still get their own picker UI and a11y for free. -->
+  <div id="yearPicker">
+    <span id="yearPickerLabel">Year</span>
+    <div id="yearOdometer" aria-hidden="true"></div>
+    <svg id="yearPickerCaret" viewBox="0 0 10 6" aria-hidden="true">
+      <path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <select id="yearSelect" aria-labelledby="yearPickerLabel">
+      <option value="2024" selected="selected">2024</option>
+      <option value="2020">2020</option>
+      <option value="2016">2016</option>
+      <option value="2012">2012</option>
+      <option value="2008">2008</option>
+      <option value="2004">2004</option>
+      <option value="2000">2000</option>
+    </select>
   </div>
   <div class="row" id="graphic">
     <div id="vis">
@@ -161,8 +163,11 @@
 <script src="./js/stackedBar.js"></script>
 <script src="js/rebind.js"></script>
 <script src="js/variables.js"></script>
+<script src="js/yearOdometer.js"></script>
 <script src="js/scrollerElections.js"></script>
 <script src="js/scroller.js"></script>
 <script src="js/sections.js"></script>
 <script src="./js/compareCities.js"></script><!-- Place this tag in your head or just before your close body tag. -->
 <script async="async" defer="defer" src="https://buttons.github.io/buttons.js"></script>
+</body>
+</html>
