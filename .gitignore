@@ -130,3 +130,7 @@ dist
 .pnp.*
 
 update.sh
+# macOS / editor cruft
+.DS_Store
+**/.DS_Store
+.vscode/
